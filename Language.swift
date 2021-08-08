@@ -7,8 +7,11 @@
 
 import Foundation
 
-enum Language {
+enum Language: String {
     case python
     case scala
+    case swift
+    case clojure
+    case javascript
+    case unknown
 }
-

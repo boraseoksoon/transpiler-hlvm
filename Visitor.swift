@@ -32,9 +32,9 @@ class Visitor: SyntaxRewriter {
     }
     
     func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
-        print("token : \(token)")
-        print("token.tokenKind : \(token.tokenKind)")
-        print("token.tokens : \(token.tokens.map { $0.text })")
+//        print("token : \(token)")
+//        print("token.tokenKind : \(token.tokenKind)")
+//        print("token.tokens : \(token.tokens.map { $0.text })")
         
         switch token.tokenKind {
             case .leftSquareBracket:

@@ -7,9 +7,17 @@
 
 import Foundation
 
-let swiftSource = """
+let swiftSource0 = """
 for i in [0,1,2,3,4] {
     print("i : ", i)
+}
+"""
+
+let swiftSource = """
+python {
+    for i in [0,1,2,3,4] {
+        print("i : ", i)
+    }
 }
 """
 
@@ -31,3 +39,4 @@ human.age
 let swiftSource3 = """
 let myMap = [1:2]
 """
+

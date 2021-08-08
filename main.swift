@@ -8,21 +8,16 @@
 import Foundation
 import SwiftSyntax
 
-let sourceCode = swiftSource
+let res = transpile(from: swiftSource)
+print(res)
 
-let destinationCode = transpile(from: sourceCode)
+func transpile(from source: String, to language: Language? = nil) -> String {
+    guard let language = language == nil ? recognizeLanguage(from: source) : language
+        else { return source }
 
-print("destinationCode : \(destinationCode)")
-print("result >>")
-print(destinationCode)
-
-print("********************************************")
-
-func transpile(from source: String) -> String {
-    let destinationLanguage = Language.python
-    
-    let AST = try! SyntaxParser.parse(source: sourceCode.trim(for:destinationLanguage))
-    let destinationCode = generate(from: AST, to: destinationLanguage)
+    let (_, indentedSource) = indent(source: source)
+    let AST = try! SyntaxParser.parse(source: indentedSource.trim(for:language))
+    let destinationCode = generate(from: AST, to: language)
     
     return destinationCode
 }

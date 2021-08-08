@@ -11,14 +11,19 @@ extension String {
     func trim(for language: Language) -> String {
 //        self
         self
+            // .eraseLanguageDecorator()
             .eraseType()
-            .replaceDataStructure()
+            .replaceDataStructure(for: language)
             .replaceCommentStyle(for: language)
     }
     
-    private func replaceDataStructure() -> String {
-        self
-            .replacingOccurrences(of: "[:]", with: "{}")
+    private func replaceDataStructure(for language: Language) -> String {
+        switch language {
+            case .python:
+                return self.replacingOccurrences(of: "[:]", with: "{}")
+            default:
+                return self
+        }
     }
     
     private func eraseType() -> String {
