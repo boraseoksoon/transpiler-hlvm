@@ -13,5 +13,6 @@ enum Language: String {
     case swift
     case clojure
     case javascript
+    case kotlin
     case unknown
 }

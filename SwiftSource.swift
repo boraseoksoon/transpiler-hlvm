@@ -13,28 +13,30 @@ for i in [0,1,2,3,4] {
 }
 """
 
-let swiftSource = """
-python {
-    for i in [0,1,2,3,4] {
-        print("i : ", i)
-    }
-}
-"""
+//let swiftSource = """
+//python {
+//    for i in [0,1,2,3,4] {
+//        print("i : ", i)
+//    }
+//}
+//"""
 
-let swiftSource2 = """
-struct Human {
-    var height: Set<String> = ["0", "1"]
-    var age: Int<GoodType>
-    var name: String
-    var name2: String = ""
-    var genderMap: [String:Any] = [:]
-    var hash2: [Int: Int] = [Int: Int]()
-    var hash3: [Int: Int]
-}
+//class Human :
+//    height = {}
+//    name = ""
+//    name2 = ""
+//    genderMap = dict()
+//    hash2 = dict()
+//    hash3 = dict()
+//    arr = []
+//    arr2 = []
+//    age = 20
+//
+//human = Human()
+//print(human.age)
 
-let human = Human()
-human.age
-"""
+
+
 
 let swiftSource3 = """
 let myMap = [1:2]
