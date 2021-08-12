@@ -45,12 +45,19 @@ let swiftSource2 = """
 }
 """
 
-
 let source5 = """
 python {
-    print("my name is \\(name), and age is \\(age)")
+for i in (0...10) {
+    print(i)
+}
 }
 """
+
+for i in (0...10) {
+    print(i)
+}
+
+
 
 let res = transpile(source5)
 print(res)
@@ -81,5 +88,185 @@ func preprocess(source: String, for language: Language) -> String {
 
 func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {
     return CodeGenerator(for: language).visit(AST).description
-    // Visitor(language: language).visit(AST).description
 }
+
+//func inspect(_ node: Syntax) {
+//  print(node.syntaxNodeType)
+//  print(node)
+//  for child in node.children {
+//    inspect(child)
+//  }
+//}
+//
+//let parsed = try! SyntaxParser.parse(source: source5)
+//inspect(Syntax(parsed))
+
+let document = SyntaxFactory.makeSourceFile(
+  statements: SyntaxFactory.makeCodeBlockItemList([
+    SyntaxFactory.makeCodeBlockItem(
+      item: Syntax(
+        SyntaxFactory.makeVariableDecl(
+          attributes: nil,
+          modifiers: nil,
+          letOrVarKeyword: SyntaxFactory.makeLetKeyword(trailingTrivia: .spaces(1)),
+          bindings: SyntaxFactory.makePatternBindingList([
+            SyntaxFactory.makePatternBinding(
+              pattern: PatternSyntax(
+                SyntaxFactory.makeIdentifierPattern(
+                  identifier: SyntaxFactory.makeIdentifier(
+                    "array",
+                    trailingTrivia: .spaces(1)
+                  )
+                )
+              ),
+              typeAnnotation: nil,
+              initializer: SyntaxFactory.makeInitializerClause(
+                equal: SyntaxFactory.makeEqualToken(trailingTrivia: .spaces(1)),
+                value: ExprSyntax(
+                  SyntaxFactory.makeArrayExpr(
+                    leftSquare: SyntaxFactory.makeLeftSquareBracketToken(),
+                    elements: SyntaxFactory.makeArrayElementList([
+                      SyntaxFactory.makeArrayElement(
+                        expression: ExprSyntax(
+                          SyntaxFactory.makeIntegerLiteralExpr(
+                            digits: SyntaxFactory.makeIntegerLiteral("1")
+                          )
+                        ),
+                        trailingComma: SyntaxFactory.makeCommaToken(
+                          trailingTrivia: .spaces(1)
+                        )
+                      ),
+                      SyntaxFactory.makeArrayElement(
+                        expression: ExprSyntax(
+                          SyntaxFactory.makeIntegerLiteralExpr(
+                            digits: SyntaxFactory.makeIntegerLiteral("2")
+                          )
+                        ),
+                        trailingComma: SyntaxFactory.makeCommaToken(
+                          trailingTrivia: .spaces(1)
+                        )
+                      ),
+                      SyntaxFactory.makeArrayElement(
+                        expression: ExprSyntax(
+                          SyntaxFactory.makeIntegerLiteralExpr(
+                            digits: SyntaxFactory.makeIntegerLiteral("3")
+                          )
+                        ),
+                        trailingComma: nil
+                      ),
+                    ]),
+                    rightSquare: SyntaxFactory.makeRightSquareBracketToken()
+                  )
+                )
+              ),
+              accessor: nil,
+              trailingComma: nil
+            )
+          ])
+        )
+      ),
+      semicolon: nil,
+      errorTokens: nil
+    ),
+    SyntaxFactory.makeCodeBlockItem(
+      item: Syntax(
+        SyntaxFactory.makeVariableDecl(
+          attributes: nil,
+          modifiers: nil,
+          letOrVarKeyword: SyntaxFactory.makeLetKeyword(
+            leadingTrivia: .newlines(1),
+            trailingTrivia: .spaces(1)
+          ),
+          bindings: SyntaxFactory.makePatternBindingList([
+            SyntaxFactory.makePatternBinding(
+              pattern: PatternSyntax(
+                SyntaxFactory.makeIdentifierPattern(
+                  identifier: SyntaxFactory.makeIdentifier(
+                    "newArray",
+                    trailingTrivia: .spaces(1)
+                  )
+                )
+              ),
+              typeAnnotation: nil,
+              initializer: SyntaxFactory.makeInitializerClause(
+                equal: SyntaxFactory.makeEqualToken(trailingTrivia: .spaces(1)),
+                value: ExprSyntax(
+                  SyntaxFactory.makeFunctionCallExpr(
+                    calledExpression: ExprSyntax(
+                      SyntaxFactory.makeMemberAccessExpr(
+                        base: ExprSyntax(
+                          SyntaxFactory.makeIdentifierExpr(
+                            identifier: SyntaxFactory.makeIdentifier("array"),
+                            declNameArguments: nil
+                          )
+                        ),
+                        dot: SyntaxFactory.makePeriodToken(),
+                        name: SyntaxFactory.makeIdentifier("map", trailingTrivia: .spaces(1)),
+                        declNameArguments: nil
+                      )
+                    ),
+                    leftParen: nil,
+                    argumentList: SyntaxFactory.makeTupleExprElementList([]),
+                    rightParen: nil,
+                    trailingClosure: SyntaxFactory.makeClosureExpr(
+                      leftBrace: SyntaxFactory.makeLeftBraceToken(),
+                      signature: nil,
+                      statements: SyntaxFactory.makeCodeBlockItemList([
+                        SyntaxFactory.makeCodeBlockItem(
+                          item: Syntax(
+                            SyntaxFactory.makeSequenceExpr(
+                              elements: SyntaxFactory.makeExprList([
+                                ExprSyntax(
+                                  SyntaxFactory.makeIdentifierExpr(
+                                    identifier: SyntaxFactory.makeDollarIdentifier(
+                                      "$0",
+                                      leadingTrivia: [.newlines(1), .spaces(2)],
+                                      trailingTrivia: .spaces(1)
+                                    ),
+                                    declNameArguments: nil
+                                  )
+                                ),
+                                ExprSyntax(
+                                  SyntaxFactory.makeBinaryOperatorExpr(
+                                    operatorToken: SyntaxFactory.makeBinaryOperator(
+                                      "*",
+                                      trailingTrivia: .spaces(1)
+                                    )
+                                  )
+                                ),
+                                ExprSyntax(
+                                  SyntaxFactory.makeIdentifierExpr(
+                                    identifier: SyntaxFactory.makeDollarIdentifier(
+                                      "$0",
+                                      trailingTrivia: .spaces(1)
+                                    ),
+                                    declNameArguments: nil
+                                  )
+                                ),
+                              ])
+                            )
+                          ),
+                          semicolon: nil,
+                          errorTokens: nil
+                        )
+                      ]),
+                      rightBrace: SyntaxFactory.makeRightBraceToken(
+                        leadingTrivia: .newlines(1)
+                      )
+                    ),
+                    additionalTrailingClosures: nil
+                  )
+                )
+              ),
+              accessor: nil,
+              trailingComma: nil
+            )
+          ])
+        )
+      ),
+      semicolon: nil,
+      errorTokens: nil
+    ),
+  ]),
+    eofToken: SyntaxFactory.makeToken(.eof, presence: .missing)
+)

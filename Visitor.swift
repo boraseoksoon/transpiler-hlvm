@@ -1,5 +1,5 @@
 //
-//  Visitor.swift
+//  CodeGenerator.swift
 //  hlvm
 //
 //  Created by Seoksoon Jang on 2021/08/02.
@@ -7,29 +7,6 @@
 
 import Foundation
 import SwiftSyntax
-
-//let swiftSource4 = """
-//python {
-//    a:   Int, b: String
-//}
-//"""
-
-//func test(a:   Int, b: String) {
-//    print("hello \\(b), I will give you \\(a) dollar")
-//}
-
-//def test(a, b):
-//  print("hello {}, I will give you {} dollar".format(b, a))
-//
-//test(10000000, "JSS")
-
-
-
-//let swiftSource4 = """
-//python {
-//    var a: Human<Asian>
-//}
-//"""
 
 public class CodeGenerator: SyntaxRewriter {
     private let language: Language
@@ -48,29 +25,38 @@ public class CodeGenerator: SyntaxRewriter {
         return super.visit(node)
     }
 
+    public override func visit(_ node: ExprListSyntax) -> Syntax {
+        // print("ExprListSyntax node : \(node)")
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
+        if node.elementList.tokens.contains(where: { $0.text == "..." }),
+           let stratIndexString = node.elementList.first?.firstToken?.text, let stratIndex = Int(stratIndexString),
+           let endIndexString = node.elementList.last?.lastToken?.text, let endIndex = Int(endIndexString)
+        {
+            return makeArray(startIndex:stratIndex, endIndex:endIndex)
+        }
+        
+//        else if node.elementList.tokens.contains(where: { $0.text == "..<" }) {
+//            print("got him2")
+//            return makeArray(firstIndex:node.firstToken, endIndex: node.lastToken, isClosedRange: false)
+//        }
+        
+
+        return super.visit(node)
+    }
+        
     public override func visit(_ node: TupleExprElementListSyntax) -> Syntax {
+        print("TupleExprElementListSyntax node : \(node)")
         return super.visit(node)
     }
     
-    /// Visit a `StringSegmentSyntax`.
-    ///   - Parameter node: the node that is being visited
-    ///   - Returns: the rewritten node
     public override func visit(_ node: StringSegmentSyntax) -> Syntax {
-        // print("StringSegmentSyntax : \(node.description)")
         return super.visit(node)
     }
     
-    /// Visit a `ExpressionSegmentSyntax`.
-    ///   - Parameter node: the node that is being visited
-    ///   - Returns: the rewritten node
     public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
-        // print("hello {}, I will give you {} dollar".format(b, a))
-        
-        //let backslash = node.withBackslash(node.backslash.withKind(.unknown("fuck")))
-//        SyntaxFactory.makeExpressionSegment(backslash: backslash, delimiter: backslash, leftParen: backslash, expressions: backslash, rightParen: backslash)
-        // SyntaxFactory.make
-        
-        print("ExpressionSegmentSyntax : \(node.description)")
         return super.visit(node)
     }
     
@@ -78,15 +64,6 @@ public class CodeGenerator: SyntaxRewriter {
     ///   - Parameter node: the node that is being visited
     ///   - Returns: the rewritten node
     public override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
-        // print("StringLiteralExprSyntax : \(node.tokens)")
-        
-        
-    
-//        "hello \(b), I will give you \(a) dollar"
-//        => print(f'Sum of {a} and {b} is {c}')
-        
-        // let newStringLiteral = SyntaxFactory.makeStringLiteralExpr()
-        
         let newString = node.description
             .dropFirst()
             .dropLast()
@@ -99,8 +76,6 @@ public class CodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        // node.calledExpression.tokens.forEach { print($0.text) }
-        
         let argumentList = node.argumentList.map {
             $0
             .withLabel($0.label?.withKind(.unknown("")))
@@ -247,4 +222,26 @@ func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
 ////
 ////            fatalError(msg)
 //    }
+}
+
+func makeArray(startIndex: Int, endIndex: Int, isClosedRange: Bool = false) -> ExprSyntax {
+    let array = (isClosedRange ? Array((startIndex..<endIndex)) : Array((startIndex...endIndex))).map {
+        SyntaxFactory.makeArrayElement(
+          expression: ExprSyntax(
+            SyntaxFactory.makeIntegerLiteralExpr(
+              digits: SyntaxFactory.makeIntegerLiteral("\($0)")
+            )
+          ),
+            trailingComma: $0 == endIndex ? nil : (SyntaxFactory.makeCommaToken(trailingTrivia: .spaces(1))
+          )
+        )
+    }
+    
+    return ExprSyntax(
+      SyntaxFactory.makeArrayExpr(
+        leftSquare: SyntaxFactory.makeLeftSquareBracketToken(),
+        elements: SyntaxFactory.makeArrayElementList(array),
+        rightSquare: SyntaxFactory.makeRightSquareBracketToken()
+      )
+    )
 }
