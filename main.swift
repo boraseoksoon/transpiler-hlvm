@@ -8,6 +8,16 @@
 import Foundation
 import SwiftSyntax
 
+let swiftSource4 = """
+python {
+    func test(a:   Int, b: String) {
+        print("hello \\(b), I will give you \\(a) dollar")
+    }
+
+    test(a: 10000000, b: "JSS")
+}
+"""
+
 let swiftSource = """
 python {
     for i in [0,1,2,3,4] {
@@ -35,7 +45,14 @@ let swiftSource2 = """
 }
 """
 
-let res = transpile(swiftSource4)
+
+let source5 = """
+python {
+    print("my name is \\(name), and age is \\(age)")
+}
+"""
+
+let res = transpile(source5)
 print(res)
 
 //for i in [0,1,2,3,4] :
@@ -45,12 +62,21 @@ func transpile(_ source: String, to language: Language? = nil) -> String {
     guard let language = language == nil ? recognizeLanguage(from: source) : language
         else { return source }
 
-    // let trimmedSource = source.trimSource(for: language)
-    let (_, indentedSource) = indent(source: source)
+    let preprocessedSource = preprocess(source: source, for: language)
+    let (_, indentedSource) = indent(source: preprocessedSource)
     let AST = try! SyntaxParser.parse(source: indentedSource)
     let generatedCode = generateCode(from: AST, for: language)
     
     return generatedCode
+}
+
+func preprocess(source: String, for language: Language) -> String {
+    switch language {
+        case .python:
+            return source.replacingOccurrences(of: "print(", with: "print(f")
+        default:
+            return source
+    }
 }
 
 func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {

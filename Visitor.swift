@@ -14,16 +14,6 @@ import SwiftSyntax
 //}
 //"""
 
-let swiftSource4 = """
-python {
-    func test(a:   Int, b: String) {
-        print("hello \\(b), I will give you \\(a) dollar")
-    }
-
-    test(a: 10000000, b: "JSS")
-}
-""".replacingOccurrences(of: "print(", with: "print(f")
-
 //func test(a:   Int, b: String) {
 //    print("hello \\(b), I will give you \\(a) dollar")
 //}
