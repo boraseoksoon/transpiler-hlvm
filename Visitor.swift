@@ -46,33 +46,148 @@ public class CodeGenerator: SyntaxRewriter {
 
         return super.visit(node)
     }
+    
+    /// Visit a `ExpressionSegmentSyntax`.
+    ///   - Parameter node: the node that is being visited
+    ///   - Returns: the rewritten node
+    public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
+        
+        let node = node
+            .withBackslash(SyntaxFactory.makeUnknown(""))
+            .withLeftParen(SyntaxFactory.makeUnknown("{"))
+            .withRightParen(SyntaxFactory.makeUnknown("}"))
+            
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: IdentifierExprSyntax) -> ExprSyntax {
+        print("IdentifierExprSyntax node : \(node)")
+        
+//        let token = SyntaxFactory.makeIdentifierExpr(
+//            identifier: SyntaxFactory.makeIdentifier("print"),
+//
+////          identifier: SyntaxFactory.makeIdentifier(
+////            "fuck",
+////            leadingTrivia: .spaces(0),
+////            trailingTrivia: [.spaces(0), /* .newlines(1) */],
+////
+////          ),
+//          declNameArguments: nil
+//        )
+        
+//        return ExprSyntax(token)
+        
+//        print("IdentifierExprSyntax node : \(node)")
+//
+//        if node.firstToken?.text == "print" {
+//        }
+        
+        return super.visit(node)
+    }
         
     public override func visit(_ node: TupleExprElementListSyntax) -> Syntax {
-        print("TupleExprElementListSyntax node : \(node)")
-        return super.visit(node)
+        // return super.visit(node)
+        
+        // print("TupleExprElementListSyntax node : \(node.tokens.map { $0.text })")
+        
+        // print("\(hey)")
+        
+        // print(i)
+        let isPlainPrint = node.tokens.filter {
+            $0.text == SyntaxFactory.makeIdentifier("\\").text
+        }.isEmpty
+        
+//        print("TupleExprElementListSyntax node : \(node)")
+        // print("node.first!.expression : \(node.first!.withExpression(<#T##newChild: ExprSyntax?##ExprSyntax?#>))")
+//        print("filter : \(isPlainPrint)")
+        
+        
+        
+        // return Syntax(node.inserting(SyntaxFactory.makeBlankTupleExprElement(), at: 0))
+        
+//        let expr = ExprSyntax(
+//          SyntaxFactory.makeIdentifierExpr(
+//            identifier: SyntaxFactory.makeDollarIdentifier(
+//                "{\(node.first!.expression)}"
+//            ),
+//            declNameArguments: nil
+//          )
+//        )
+        
+        
+        
+        // print(f"{name}")
+        
+        let list = SyntaxFactory.makeTupleExprElementList([
+            SyntaxFactory.makeTupleExprElement(
+                label: isPlainPrint ? nil : SyntaxFactory.makeIdentifier("f"),
+                colon: nil,
+                expression: node.first!.expression,  // isPlainPrint ? node.first!.expression : expr,
+                trailingComma: nil// SyntaxFactory.makeCommaToken()
+            ),
+//            SyntaxFactory.makeTupleExprElement(
+//                label: nil,
+//                colon: SyntaxFactory.makeColonToken(),
+//                expression: expr,
+//                trailingComma: nil
+//            )
+        ])
+        
+        // return Syntax(list)
+        return super.visit(list)
+        
+//        SyntaxFactory.makeTupleExprElement(label: <#T##TokenSyntax?#>, colon: <#T##TokenSyntax?#>, expression: <#T##ExprSyntax#>, trailingComma: <#T##TokenSyntax?#>)
+//        SyntaxFactory.makeTupleExprElementList(<#T##elements: [TupleExprElementSyntax]##[TupleExprElementSyntax]#>)
+        
+        
+//        if node.parent?.firstToken?.text ?? "" == "print" {
+//            if node.count == 1 {
+//                SyntaxFactory.makeTupleExprElementList(<#T##elements: [TupleExprElementSyntax]##[TupleExprElementSyntax]#>)
+//
+//
+////                let left = SyntaxFactory.makeToken(.leftParen, presence: .present)
+////                let right = SyntaxFactory.makeToken(.rightBrace, presence: .present)
+//
+//                // return Syntax(SyntaxFactory.makeIdentifier("fuck you"))
+//
+////                let token = SyntaxFactory.makeTupleExprElementList(SyntaxFactory.makeBlankTupleExprElementList())
+////                let token = SyntaxFactory.makeTupleExpr(leftParen: left,
+////                                            elementList: SyntaxFactory.makeBlankTupleExprElementList(),
+////                                            rightParen:right)
+////                return Syntax(token)
+//                print("got you!")
+//            } else {
+//
+//            }
+//        }
+        
+        // return super.visit(node)
     }
     
     public override func visit(_ node: StringSegmentSyntax) -> Syntax {
         return super.visit(node)
     }
     
-    public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
-        return super.visit(node)
-    }
+//    public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
+//        return super.visit(node)
+//    }
     
     /// Visit a `StringLiteralExprSyntax`.
     ///   - Parameter node: the node that is being visited
     ///   - Returns: the rewritten node
     public override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
-        let newString = node.description
-            .dropFirst()
-            .dropLast()
-            .replacingOccurrences(of: "\\(", with: "{")
-            .replacingOccurrences(of: ")", with: "}")
+        return super.visit(node)
         
-        let newNode = SyntaxFactory.makeStringLiteralExpr(newString)
-        
-        return super.visit(newNode)
+//        print("node.description : \(node.description)")
+//        let newString = node.description
+//            .dropFirst()
+//            .dropLast()
+//            .replacingOccurrences(of: "\\(", with: "{")
+//            .replacingOccurrences(of: ")", with: "}")
+//
+//        let newNode = SyntaxFactory.makeStringLiteralExpr(newString)
+//
+//        return super.visit(newNode)
     }
     
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {

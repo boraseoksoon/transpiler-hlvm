@@ -47,15 +47,24 @@ let swiftSource2 = """
 
 let source5 = """
 python {
-for i in (0...10) {
+    let i = 10
+    let j = 20
+
+    for n in (0...100) {
     print(i)
-}
+    print("hey")
+    print("\\(i)")
+
+    print("\\(i), \\(j)")
+    }
 }
 """
 
-for i in (0...10) {
-    print(i)
-}
+// print(i)
+
+//for i in (0...10) {
+//    print(i)
+//}
 
 
 
@@ -77,17 +86,12 @@ func transpile(_ source: String, to language: Language? = nil) -> String {
     return generatedCode
 }
 
-func preprocess(source: String, for language: Language) -> String {
-    switch language {
-        case .python:
-            return source.replacingOccurrences(of: "print(", with: "print(f")
-        default:
-            return source
-    }
-}
-
 func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {
     return CodeGenerator(for: language).visit(AST).description
+}
+
+func preprocess(source: String, for language: Language) -> String {
+    source
 }
 
 //func inspect(_ node: Syntax) {
@@ -101,6 +105,12 @@ func generateCode(from AST: SourceFileSyntax, for language: Language) -> String 
 //let parsed = try! SyntaxParser.parse(source: source5)
 //inspect(Syntax(parsed))
 
+//let array = [1, 2, 3]
+//let newArray = array.map {
+//  $0 * $0
+//}
+
+// temp
 let document = SyntaxFactory.makeSourceFile(
   statements: SyntaxFactory.makeCodeBlockItemList([
     SyntaxFactory.makeCodeBlockItem(
