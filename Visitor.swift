@@ -79,8 +79,14 @@ public class CodeGenerator: SyntaxRewriter {
             // return super.visit(node)
         } else {
             // var arr: [Int] = []
+//            print("node.typeAnnotation : \(node.typeAnnotation)")
+//            print("node.pattern : \(node.pattern)")
+//            print("node.accessor : \(node.accessor)")
             
-            let typeAnnotation = node.typeAnnotation == nil ? SyntaxFactory.makeBlankTypeAnnotation() : eraseType(node:node.typeAnnotation!)
+            let typeAnnotation = node.typeAnnotation == nil ?
+                node.typeAnnotation // SyntaxFactory.makeBlankTypeAnnotation()
+                :
+                eraseType(node:node.typeAnnotation!)
             
             let node = SyntaxFactory.makePatternBinding(pattern: node.pattern,
                                              typeAnnotation: typeAnnotation,
@@ -88,7 +94,8 @@ public class CodeGenerator: SyntaxRewriter {
                                              accessor: node.accessor,
                                              trailingComma: node.trailingComma)
             
-            return Syntax(node)
+            // return Syntax(node)
+            return super.visit(node)
         }
         
         return super.visit(node)
@@ -199,6 +206,8 @@ public class CodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        print("FunctionCallExprSyntax : \(node)")
+        
         let argumentList = node.argumentList.map {
             $0
             .withLabel($0.label?.withKind(.unknown("")))
@@ -211,6 +220,7 @@ public class CodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: FunctionParameterSyntax) -> Syntax {
+        print("FunctionParameterSyntax : \(node)")
         let colon = node.firstToken?.withKind(.unknown("")).withoutTrivia()
         let node = node.withColon(colon).withType(.none)
         
@@ -346,7 +356,7 @@ func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
             return token.withKind(.unknown(""))
                 .withTrailingTrivia(Trivia.spaces(0))
         default:
-             return token.withKind(token.tokenKind)
+             return token // token.withKind(token.tokenKind)
 
 //            let msg = """
 //            no token text : \(token.text) token Kind : \(token.tokenKind)!

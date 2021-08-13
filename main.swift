@@ -10,13 +10,21 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    hello(msg: "world", isFirst: false)
-
-    let name = "JSS"
-    var emoji: String = 👍
-    print("hey : \\(name) how are you? : \\(emoji)")
+    var arr: [Int] = []
+    let x = Set<Int>()
 }
 """
+// x = Set<Int>()
+// x = set()
+
+
+// let set = Set<Int>()
+
+//hello(msg: "world", isFirst: false)
+//
+//let name = "JSS"
+//var emoji: String = 👍
+//print("hey : \\(name) how are you? : \\(emoji)")
 
 //type(of:arr)
 //hello(msg: "world", isFirst: false)
