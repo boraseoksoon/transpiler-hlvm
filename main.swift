@@ -10,10 +10,24 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    var arr: [Int] = []
+    var y: Set<String> = ["a", "b"]
     let x = Set<Int>()
+
+    print("y man : ", y)
+    print("x type is \\(type(of:x)) and x is \\(x))")
 }
 """
+//let x = Set<Int>()
+//var arr: [Int] = []
+
+//var y: Set<String> = ["a", "b"]
+//let x = Set<Int>()
+//print("y man : ", y)
+//
+//print("y man : ", y)
+//print("x type is \\(type(of:x)) and x is \\(x))")
+
+
 // x = Set<Int>()
 // x = set()
 
@@ -196,20 +210,20 @@ let document = SyntaxFactory.makeSourceFile(
               initializer: SyntaxFactory.makeInitializerClause(
                 equal: SyntaxFactory.makeEqualToken(trailingTrivia: .spaces(1)),
                 value: ExprSyntax(
-                  SyntaxFactory.makeFunctionCallExpr(
-                    calledExpression: ExprSyntax(
-                      SyntaxFactory.makeMemberAccessExpr(
-                        base: ExprSyntax(
-                          SyntaxFactory.makeIdentifierExpr(
-                            identifier: SyntaxFactory.makeIdentifier("array"),
-                            declNameArguments: nil
-                          )
-                        ),
-                        dot: SyntaxFactory.makePeriodToken(),
-                        name: SyntaxFactory.makeIdentifier("map", trailingTrivia: .spaces(1)),
-                        declNameArguments: nil
-                      )
-                    ),
+                    SyntaxFactory.makeFunctionCallExpr(
+                      calledExpression: ExprSyntax(
+                        SyntaxFactory.makeMemberAccessExpr(
+                          base: ExprSyntax(
+                            SyntaxFactory.makeIdentifierExpr(
+                              identifier: SyntaxFactory.makeIdentifier("array"),
+                              declNameArguments: nil
+                            )
+                          ),
+                          dot: SyntaxFactory.makePeriodToken(),
+                          name: SyntaxFactory.makeIdentifier("map", trailingTrivia: .spaces(1)),
+                          declNameArguments: nil
+                        )
+                      ),
                     leftParen: nil,
                     argumentList: SyntaxFactory.makeTupleExprElementList([]),
                     rightParen: nil,

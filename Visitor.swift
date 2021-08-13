@@ -205,8 +205,33 @@ public class CodeGenerator: SyntaxRewriter {
 //        return super.visit(newNode)
     }
     
+    public override func visit(_ node: SpecializeExprSyntax) -> ExprSyntax {
+        print("SpecializeExprSyntax : \(node)")
+        print("node.expression : \(node.expression)")
+        
+//        let expr = ExprSyntax(SyntaxFactory.makeBlankOptionalChainingExpr())
+//        let generic = SyntaxFactory.makeBlankGenericArgumentClause()
+//        let node = SyntaxFactory.makeSpecializeExpr(expression: expr, genericArgumentClause: generic)
+        
+        return super.visit(node
+                            .withExpression(ExprSyntax(SyntaxFactory.makeVariableExpr("set")))
+                            .withGenericArgumentClause(SyntaxFactory.makeBlankGenericArgumentClause())
+        )
+    }
+    
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         print("FunctionCallExprSyntax : \(node)")
+        
+        var node = node
+        
+        if (node.calledExpression.firstToken?.text ?? "").contains("Set") {
+            print("true node.calledExpression : \(node.calledExpression)")
+            
+//            SyntaxFactory.make
+//            node.withCalledExpression(ExprSyntax(SyntaxFactory.makeBlankFunctionCallExpr())
+            
+            // print("hey : \(node.withCalledExpression(ExprSyntax(SyntaxFactory.makeBlankFunctionCallExpr())).firstToken?.text)")
+        }
         
         let argumentList = node.argumentList.map {
             $0
@@ -246,19 +271,26 @@ public class CodeGenerator: SyntaxRewriter {
                 let isPlainPrint = node.tokens.filter {
                     $0.text == SyntaxFactory.makeIdentifier("\\").text
                 }.isEmpty
-
-                let list = SyntaxFactory.makeTupleExprElementList([
-                    SyntaxFactory.makeTupleExprElement(
-                        label: isPlainPrint ? nil : SyntaxFactory.makeIdentifier("f"),
-                        colon: nil,
-                        expression: node.first!.expression,  // isPlainPrint ? node.first!.expression : expr,
-                        trailingComma: nil// SyntaxFactory.makeCommaToken()
-                    )
-                ])
                 
-                // return Syntax(list)
-                return super.visit(list)
+                let isCommaPrint = !(node.tokens.filter {
+                    return $0.text == ","
+                }.isEmpty)
 
+                if isCommaPrint {
+                    return super.visit(node)
+                } else {
+                    let list = SyntaxFactory.makeTupleExprElementList([
+                        SyntaxFactory.makeTupleExprElement(
+                            label: isPlainPrint ? nil : SyntaxFactory.makeIdentifier("f"),
+                            colon: nil,
+                            expression: node.first!.expression,  // isPlainPrint ? node.first!.expression : expr,
+                            trailingComma: nil// SyntaxFactory.makeCommaToken()
+                        )
+                    ])
+                    
+                    // return Syntax(list)
+                    return super.visit(list)
+                }
             }
         } else {
             return super.visit(node)
