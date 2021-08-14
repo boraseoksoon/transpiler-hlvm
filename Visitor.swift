@@ -44,14 +44,14 @@ public class CodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: NilLiteralExprSyntax) -> ExprSyntax {
-        print("node : \(node)")
-
+        print("NilLiteralExprSyntax node : \(node)")
         let node = SyntaxFactory.makeNilLiteralExpr(nilKeyword: SyntaxFactory.makeUnknown("None"))
         
         return super.visit(node)
     }
     
     public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+        // print("VariableDeclSyntax node : \(node)")
         return super.visit(node)
     }
     
@@ -169,9 +169,6 @@ public class CodeGenerator: SyntaxRewriter {
         return super.visit(node)
     }
 
-    /// Visit a `StringLiteralExprSyntax`.
-    ///   - Parameter node: the node that is being visited
-    ///   - Returns: the rewritten node
     public override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
         return super.visit(node)
         
@@ -214,13 +211,43 @@ public class CodeGenerator: SyntaxRewriter {
             node.calledExpression.tokens.map { $0.text }.contains(":")
         )
         
-        if node.tokens
+        let syntaxString = node.tokens
             .map ({ $0.text })
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .contains("Set(arrayLiteral:")
+        
+        if syntaxString.contains("(arrayLiteral:") || syntaxString.contains("Set<String>")
         {
-            print("Set(arrayLiteral: replace!: \(node.argumentList)")
+            print("(arrayLiteral: replace!: \(node.argumentList)")
+            
+//            node.argumentList.tokens.forEach {
+//                print("node.argumentList : \($0)")
+//            }
+            
+//            let expression = NSExpression(format: node.argumentList.tokens.map { $0.text }.joined() )
+//            (expression.expressionValue(with: nil, context: nil) as! [Any]).forEach {
+//                print("got you? : \($0)")
+//            }
+
+//            let expression = node.argumentList.tokens.map { $0.text }.joined()
+//            print("expression : \(expression)")
+            
+            
+            
+            
+            
+            // var set3 = Set<String>(["0", "1"])
+            
+//            let argumentList = [SyntaxFactory.makeTupleExprElement(label: nil, colon: nil, expression: ExprSyntax(SyntaxFactory.makeVariableExpr("fuck")), trailingComma: nil)]
+            
+//            let argumentList2 = SyntaxFactory.makeTupleExprElementList([
+//                SyntaxFactory.makeTupleExprElement(
+//                    label: nil,
+//                    colon: nil,
+//                    expression: node.calledExpression,
+//                    trailingComma: nil
+//                )
+//            ])
             
             let argumentList = node.argumentList.map {
                 $0
@@ -238,37 +265,29 @@ public class CodeGenerator: SyntaxRewriter {
                                                       trailingClosure: nil,
                                                       additionalTrailingClosures: nil)
             return super.visit(node)
-        }
-//        let isSet = (
-//            node.firstToken?.text == "["
-//            &&
-//            node.lastToken?.text == "]"
-//            &&
-//            node.tokens.map { $0.text }.contains(":")
-//        )
-        
-        if isDict {
+        } else if isDict {
             node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("{}")),
                                                       leftParen: nil,
                                                       argumentList: SyntaxFactory.makeBlankTupleExprElementList(),
                                                       rightParen: nil,
                                                       trailingClosure: nil,
                                                       additionalTrailingClosures: nil)
-        }
-        
-        if (node.calledExpression.firstToken?.text ?? "").contains("Set") {
+        } else if (node.calledExpression.firstToken?.text ?? "").contains("Set") {
             print("true node.calledExpression : \(node.calledExpression)")
+            
+            
+            let argumentList = node.argumentList.map {
+                $0
+                .withLabel($0.label?.withKind(.unknown("")))
+                .withColon($0.colon?.withKind(.unknown(""))
+                .withoutTrivia())
+            }
+            
+            let list = SyntaxFactory.makeTupleExprElementList(argumentList)
+            return super.visit(node.withArgumentList(list))
         }
         
-        let argumentList = node.argumentList.map {
-            $0
-            .withLabel($0.label?.withKind(.unknown("")))
-            .withColon($0.colon?.withKind(.unknown(""))
-            .withoutTrivia())
-        }
-        
-        let list = SyntaxFactory.makeTupleExprElementList(argumentList)
-        return super.visit(node.withArgumentList(list))
+        return super.visit(node)
     }
     
     public override func visit(_ node: CodeBlockSyntax) -> Syntax {

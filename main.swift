@@ -67,12 +67,13 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    func test() {
-        var c: Set<Int> = Set(arrayLiteral:0,1,2,3)
-        print(c)
-    }
+    var set3 = Set<String>(["0", "1"])
 }
 """
+//var set1 = Set<String>(["0", "1"])
+//var c: Set<Int> = Set(arrayLiteral:0,1,2,3)
+//var set1 = Set<String>(["0", "1"])
+
 // var c: Set<Int> = Set(arrayLiteral:0,1,2,3)
 // c = {0,1,2,3,4}
 
