@@ -67,10 +67,14 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    var a: [Int] = [Int]()
+    for i in (0...10) {
+        print(i)
+    }
 }
 """
-var a: [Int] = [Int]()
+
+
+
 
 // pass for now: var set3 = Set<String>(["0", "1"])
 

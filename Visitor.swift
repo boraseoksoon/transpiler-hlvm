@@ -58,45 +58,55 @@ public class CodeGenerator: SyntaxRewriter {
     public override func visit(_ node: PatternBindingSyntax) -> Syntax {
         print("PatternBindingSyntax : \(node.initializer)")
 
-        func eraseType(node: TypeAnnotationSyntax) -> TypeAnnotationSyntax {
+        func eraseType() -> TypeAnnotationSyntax {
             SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier("").withTrailingTrivia(.spaces(1)),
                                              type: SyntaxFactory.makeTypeIdentifier(""))
         }
         
-        func makeEmptyArray(node: PatternBindingSyntax) -> PatternBindingSyntax {
-            let array = SyntaxFactory.makeArrayElement(
-                expression: ExprSyntax(SyntaxFactory.makeBlankArrayExpr()),
-                trailingComma: nil)
+        enum PatternBindingSyntaxType {
+            case emptyArray
+            case none
+        }
+        func makePatternBindingSyntax(node: PatternBindingSyntax, type: PatternBindingSyntaxType) -> PatternBindingSyntax {
             
-            let leftSquare = SyntaxFactory.makeLeftSquareBracketToken()
-            let rightSquare = SyntaxFactory.makeRightSquareBracketToken()
-            
-            let arr = SyntaxFactory.makeArrayExpr(leftSquare: leftSquare,
-                                                  elements: SyntaxFactory.makeArrayElementList([array]),
-                                                  rightSquare: rightSquare)
-            let arrayList = arr.withLeadingTrivia(.spaces(1))
-            let arrayExpression = ExprSyntax(arrayList)
+            var expression: ExprSyntax!
+            switch type {
+                case .emptyArray:
+                    let array = SyntaxFactory.makeArrayElement(
+                        expression: ExprSyntax(SyntaxFactory.makeBlankArrayExpr()),
+                        trailingComma: nil)
+
+                    let leftSquare = SyntaxFactory.makeLeftSquareBracketToken()
+                    let rightSquare = SyntaxFactory.makeRightSquareBracketToken()
+                    let arr = SyntaxFactory.makeArrayExpr(leftSquare: leftSquare,
+                                                          elements: SyntaxFactory.makeArrayElementList([array]),
+                                                          rightSquare: rightSquare)
+
+                    expression = ExprSyntax(arr.withLeadingTrivia(.spaces(1)))
+                case .none:
+                    expression = ExprSyntax(SyntaxFactory.makeVariableExpr("None").withLeadingTrivia(.spaces(1)))
+                default:
+                    fatalError("not supported PatternBindingSyntaxType")
+            }
 
             let initalizer = SyntaxFactory.makeInitializerClause(equal: SyntaxFactory.makeEqualToken(),
-                                                                 value: arrayExpression)
+                                                                 value: expression)
             
             return SyntaxFactory.makePatternBinding(pattern: node.pattern,
-                                                    typeAnnotation: eraseType(node:node.typeAnnotation!),
+                                                    typeAnnotation: eraseType(),
                                                     initializer: initalizer,
                                                     accessor: node.accessor,
                                                     trailingComma: node.trailingComma)
         }
         
         var node = node
+        
         if node.initializer == nil {
-            let node = makeEmptyArray(node:node)
-            return Syntax(node)
+            print("got node man : \(node)")
+            let node = makePatternBindingSyntax(node:node, type: .none)
+            return super.visit(node)
         } else {
-            let typeAnnotation = node.typeAnnotation == nil ?
-                node.typeAnnotation // SyntaxFactory.makeBlankTypeAnnotation()
-                :
-                eraseType(node:node.typeAnnotation!)
-            
+            let typeAnnotation = node.typeAnnotation == nil ? node.typeAnnotation : eraseType()
             let node = SyntaxFactory.makePatternBinding(pattern: node.pattern,
                                              typeAnnotation: typeAnnotation,
                                              initializer: node.initializer,
@@ -189,6 +199,13 @@ public class CodeGenerator: SyntaxRewriter {
         print("node.calledExpression : \(node.calledExpression)")
         var node = node
         
+        let calledExpressionSyntaxString = node.calledExpression.tokens
+            .map { $0.text }
+            .joined()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    
+        print("calledExpressionSyntaxString : \(calledExpressionSyntaxString)")
+        
         let isDict = (
             node.calledExpression.firstToken?.text == "["
             &&
@@ -222,14 +239,27 @@ public class CodeGenerator: SyntaxRewriter {
                                                       additionalTrailingClosures: nil)
             return super.visit(node)
             
-        }
-        
-        if syntaxString.contains("(arrayLiteral:") || syntaxString.contains("Set<String>")
-        {
+        } else if syntaxString.contains("(arrayLiteral:") {
             print("(arrayLiteral: replace!: \(node.argumentList)")
+
+            let argumentList = node.argumentList
+                .map {
+                    return $0
+                    .withExpression($0.expression)
+                    .withLabel($0.label?.withKind(.unknown("")))
+                    .withColon($0.colon?.withKind(.unknown("")))
+                }
+
+             let list = SyntaxFactory.makeTupleExprElementList(argumentList)
             
-            
-            
+            node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                                                      leftParen: SyntaxFactory.makeLeftBraceToken(),
+                                                      argumentList: list,
+                                                      rightParen: SyntaxFactory.makeRightBraceToken(),
+                                                      trailingClosure: nil,
+                                                      additionalTrailingClosures: nil)
+            return super.visit(node)
+
 //            node.argumentList.tokens.forEach {
 //                print("node.argumentList : \($0)")
 //            }
@@ -285,23 +315,6 @@ public class CodeGenerator: SyntaxRewriter {
 //            node.argumentList
 //                .forEach { print("$0.expression : \($0.expression)") }
             
-            let argumentList = node.argumentList
-                .map {
-                    return $0
-                    .withExpression($0.expression)
-                    .withLabel($0.label?.withKind(.unknown("")))
-                    .withColon($0.colon?.withKind(.unknown("")))
-                }
-
-             let list = SyntaxFactory.makeTupleExprElementList(argumentList)
-            
-            node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
-                                                      leftParen: SyntaxFactory.makeLeftBraceToken(),
-                                                      argumentList: list,
-                                                      rightParen: SyntaxFactory.makeRightBraceToken(),
-                                                      trailingClosure: nil,
-                                                      additionalTrailingClosures: nil)
-            return super.visit(node)
         } else if isDict {
             node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("{}")),
                                                       leftParen: nil,
@@ -309,19 +322,32 @@ public class CodeGenerator: SyntaxRewriter {
                                                       rightParen: nil,
                                                       trailingClosure: nil,
                                                       additionalTrailingClosures: nil)
-        } else if (node.calledExpression.firstToken?.text ?? "").contains("Set") {
-            print("true node.calledExpression : \(node.calledExpression)")
+            return super.visit(node)
             
+        } else if (calledExpressionSyntaxString.hasPrefix("Set<") && calledExpressionSyntaxString.hasSuffix(">")) {
+            // var set3 = Set<String>(["0", "1"])
+            print("despite syntaxString : \(syntaxString)")
             
-            let argumentList = node.argumentList.map {
-                $0
-                .withLabel($0.label?.withKind(.unknown("")))
-                .withColon($0.colon?.withKind(.unknown(""))
-                .withoutTrivia())
+            if syntaxString.contains(",") {
+                node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                                                          leftParen: nil,
+                                                          argumentList: node.argumentList,
+                                                          rightParen: nil,
+                                                          trailingClosure: nil,
+                                                          additionalTrailingClosures: nil)
+                
+                return super.visit(node)
+            } else {
+                let argumentList = node.argumentList.map {
+                    $0
+                    .withLabel($0.label?.withKind(.unknown("")))
+                    .withColon($0.colon?.withKind(.unknown(""))
+                    .withoutTrivia())
+                }
+
+                let list = SyntaxFactory.makeTupleExprElementList(argumentList)
+                return super.visit(node.withArgumentList(list))
             }
-            
-            let list = SyntaxFactory.makeTupleExprElementList(argumentList)
-            return super.visit(node.withArgumentList(list))
         }
         
         return super.visit(node)
