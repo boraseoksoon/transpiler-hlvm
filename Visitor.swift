@@ -89,19 +89,9 @@ public class CodeGenerator: SyntaxRewriter {
         
         var node = node
         if node.initializer == nil {
-            // var arr: [Int]
-            //
             let node = makeEmptyArray(node:node)
             return Syntax(node)
-            
-            // return super.visit(node)
-            // return super.visit(node)
         } else {
-            // var arr: [Int] = []
-//            print("node.typeAnnotation : \(node.typeAnnotation)")
-//            print("node.pattern : \(node.pattern)")
-//            print("node.accessor : \(node.accessor)")
-            
             let typeAnnotation = node.typeAnnotation == nil ?
                 node.typeAnnotation // SyntaxFactory.makeBlankTypeAnnotation()
                 :
@@ -112,8 +102,6 @@ public class CodeGenerator: SyntaxRewriter {
                                              initializer: node.initializer,
                                              accessor: node.accessor,
                                              trailingComma: node.trailingComma)
-            
-            // return Syntax(node)
             return super.visit(node)
         }
         
@@ -160,8 +148,6 @@ public class CodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: IdentifierExprSyntax) -> ExprSyntax {
-        print("IdentifierExprSyntax node : \(node)")
-        print("********")
         return super.visit(node)
     }
 
@@ -216,9 +202,33 @@ public class CodeGenerator: SyntaxRewriter {
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
+        if syntaxString.hasPrefix("[") && syntaxString.hasSuffix("]()") {
+            print("got him")
+            
+            let expression = ExprSyntax(SyntaxFactory.makeVariableExpr("[]"))
+            let elements = [SyntaxFactory.makeTupleExprElement(
+                label: nil,
+                colon: nil,
+                expression: expression,
+                trailingComma: nil
+            )]
+            
+            let list = SyntaxFactory.makeTupleExprElementList(elements)
+            node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                                                      leftParen: nil,
+                                                      argumentList: list,
+                                                      rightParen: nil,
+                                                      trailingClosure: nil,
+                                                      additionalTrailingClosures: nil)
+            return super.visit(node)
+            
+        }
+        
         if syntaxString.contains("(arrayLiteral:") || syntaxString.contains("Set<String>")
         {
             print("(arrayLiteral: replace!: \(node.argumentList)")
+            
+            
             
 //            node.argumentList.tokens.forEach {
 //                print("node.argumentList : \($0)")
@@ -249,14 +259,41 @@ public class CodeGenerator: SyntaxRewriter {
 //                )
 //            ])
             
-            let argumentList = node.argumentList.map {
-                $0
-                .withExpression($0.expression)
-                .withLabel($0.label?.withKind(.unknown("")))
-                .withColon($0.colon?.withKind(.unknown("")))
-            }
+//            var iter = node.argumentList.makeIterator()
+//            while iter.next() != nil {
+//                print("iter : ", iter)
+//            }
             
-            let list = SyntaxFactory.makeTupleExprElementList(argumentList)
+//            node.argumentList = node.argumentList.
+//            node.argumentList = node.argumentList.removing(childAt: 0)
+//
+            //            let expression = ExprSyntax(SyntaxFactory.makeVariableExpr("hey"))
+            //            let arrays = (0...10)
+            //            let elements = arrays.enumerated().map { index, _ in
+            //                SyntaxFactory.makeTupleExprElement(
+            //                    label: nil,
+            //                    colon: nil,
+            //                    expression: expression,
+            //                    trailingComma: index == arrays.count - 1 ? nil : SyntaxFactory.makeCommaToken()
+            //                )
+            //            }
+//
+//            let list = SyntaxFactory.makeTupleExprElementList(elements)
+            
+                //.filter { $0.firstToken?.text == "[" || $0.lastToken?.text == "]" }
+            
+//            node.argumentList
+//                .forEach { print("$0.expression : \($0.expression)") }
+            
+            let argumentList = node.argumentList
+                .map {
+                    return $0
+                    .withExpression($0.expression)
+                    .withLabel($0.label?.withKind(.unknown("")))
+                    .withColon($0.colon?.withKind(.unknown("")))
+                }
+
+             let list = SyntaxFactory.makeTupleExprElementList(argumentList)
             
             node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
                                                       leftParen: SyntaxFactory.makeLeftBraceToken(),
