@@ -8,15 +8,6 @@
 import Foundation
 import SwiftSyntax
 
-let source5 = """
-python {
-    var y: Set<String> = ["a", "b"]
-    let x = Set<Int>()
-
-    print("y man : ", y)
-    print("x type is \\(type(of:x)) and x is \\(x))")
-}
-"""
 //let x = Set<Int>()
 //var arr: [Int] = []
 
@@ -30,7 +21,6 @@ python {
 
 // x = Set<Int>()
 // x = set()
-
 
 // let set = Set<Int>()
 
@@ -58,9 +48,6 @@ python {
 //    var map: [Int : Int]
 //}
 
-
-
-
 // var employees = [Human<Programmer>]()
 
 //class Google :
@@ -69,19 +56,37 @@ python {
 //class Google :
 //    id = "good"
 
-
 // print(i)
 
 //for i in (0...10) {
 //    print(i)
 //}
 
+//for i in [0,1,2,3,4] :
+//    print("i : ", i)
+
+let source5 = """
+python {
+    func test() {
+        var c: Set<Int> = Set(arrayLiteral:0,1,2,3)
+        print(c)
+    }
+}
+"""
+// var c: Set<Int> = Set(arrayLiteral:0,1,2,3)
+// c = {0,1,2,3,4}
+
+
+// x = {String:Int}()
+// x = {}
+
+// x = {"a" : 10}
+
+//print("value : ", x["a"])
+//print(type(x))
 
 let res = transpile(source5)
 print(res)
-
-//for i in [0,1,2,3,4] :
-//    print("i : ", i)
 
 func transpile(_ source: String, to language: Language? = nil) -> String {
     guard let language = language == nil ? recognizeLanguage(from: source) : language
@@ -96,7 +101,7 @@ func transpile(_ source: String, to language: Language? = nil) -> String {
 }
 
 func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {
-    return CodeGenerator(for: language).visit(AST).description
+    CodeGenerator(for: language).visit(AST).description
 }
 
 func preprocess(source: String, for language: Language) -> String {

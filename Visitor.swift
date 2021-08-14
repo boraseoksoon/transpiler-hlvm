@@ -24,14 +24,33 @@ public class CodeGenerator: SyntaxRewriter {
     public override func visit(_ node: DictionaryExprSyntax) -> ExprSyntax {
         print("DictionaryExprSyntax : \(node)")
         
+        // [":"]
+        let isEmptyDict = (
+            node.content.tokens.map { $0.text }.count == 1
+            &&
+            node.content.tokens.map { $0.text }.contains(":")
+        )
+        
         let leftSquare = SyntaxFactory.makeUnknown("{")
         let rightSquare = SyntaxFactory.makeUnknown("}")
         
-        let node = SyntaxFactory.makeDictionaryExpr(leftSquare: leftSquare, content: node.content, rightSquare: rightSquare)
+        let node = SyntaxFactory.makeDictionaryExpr(
+            leftSquare: leftSquare,
+            content: isEmptyDict ? Syntax(SyntaxFactory.makeUnknown("")) : node.content,
+            rightSquare: rightSquare
+        )
         
         return super.visit(node)
     }
+    
+    public override func visit(_ node: NilLiteralExprSyntax) -> ExprSyntax {
+        print("node : \(node)")
 
+        let node = SyntaxFactory.makeNilLiteralExpr(nilKeyword: SyntaxFactory.makeUnknown("None"))
+        
+        return super.visit(node)
+    }
+    
     public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         return super.visit(node)
     }
@@ -102,18 +121,8 @@ public class CodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: TypeAnnotationSyntax) -> Syntax {
-//        func eraseType(node: TypeAnnotationSyntax) -> TypeAnnotationSyntax {
-//            SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier("").withTrailingTrivia(.spaces(1)),
-//                                             type: SyntaxFactory.makeTypeIdentifier(""))
-//        }
-//
-//        print("type node : \(node)")
-        // return super.visit(eraseType(node: node))
-        
         return super.visit(node)
     }
-    
-    
 
     public override func visit(_ node: CodeBlockItemSyntax) -> Syntax {
         return super.visit(node)
@@ -126,17 +135,13 @@ public class CodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
         if node.elementList.tokens.contains(where: { $0.text == "..." }),
-           let stratIndexString = node.elementList.first?.firstToken?.text, let stratIndex = Int(stratIndexString),
-           let endIndexString = node.elementList.last?.lastToken?.text, let endIndex = Int(endIndexString)
+           let stratIndexString = node.elementList.first?.firstToken?.text,
+           let stratIndex = Int(stratIndexString),
+           let endIndexString = node.elementList.last?.lastToken?.text,
+           let endIndex = Int(endIndexString)
         {
             return makeArray(startIndex:stratIndex, endIndex:endIndex)
         }
-        
-//        else if node.elementList.tokens.contains(where: { $0.text == "..<" }) {
-//            print("got him2")
-//            return makeArray(firstIndex:node.firstToken, endIndex: node.lastToken, isClosedRange: false)
-//        }
-        
 
         return super.visit(node)
     }
@@ -145,7 +150,7 @@ public class CodeGenerator: SyntaxRewriter {
     ///   - Parameter node: the node that is being visited
     ///   - Returns: the rewritten node
     public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
-        
+        print("ExpressionSegmentSyntax : \(node)")
         let node = node
             .withBackslash(SyntaxFactory.makeUnknown(""))
             .withLeftParen(SyntaxFactory.makeUnknown("{"))
@@ -157,36 +162,13 @@ public class CodeGenerator: SyntaxRewriter {
     public override func visit(_ node: IdentifierExprSyntax) -> ExprSyntax {
         print("IdentifierExprSyntax node : \(node)")
         print("********")
-//        let token = SyntaxFactory.makeIdentifierExpr(
-//            identifier: SyntaxFactory.makeIdentifier("print"),
-//
-////          identifier: SyntaxFactory.makeIdentifier(
-////            "fuck",
-////            leadingTrivia: .spaces(0),
-////            trailingTrivia: [.spaces(0), /* .newlines(1) */],
-////
-////          ),
-//          declNameArguments: nil
-//        )
-        
-//        return ExprSyntax(token)
-        
-//        print("IdentifierExprSyntax node : \(node)")
-//
-//        if node.firstToken?.text == "print" {
-//        }
-        
         return super.visit(node)
     }
 
     public override func visit(_ node: StringSegmentSyntax) -> Syntax {
         return super.visit(node)
     }
-    
-//    public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
-//        return super.visit(node)
-//    }
-    
+
     /// Visit a `StringLiteralExprSyntax`.
     ///   - Parameter node: the node that is being visited
     ///   - Returns: the rewritten node
@@ -221,16 +203,61 @@ public class CodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         print("FunctionCallExprSyntax : \(node)")
-        
+        print("node.calledExpression : \(node.calledExpression)")
         var node = node
+        
+        let isDict = (
+            node.calledExpression.firstToken?.text == "["
+            &&
+            node.calledExpression.lastToken?.text == "]"
+            &&
+            node.calledExpression.tokens.map { $0.text }.contains(":")
+        )
+        
+        if node.tokens
+            .map ({ $0.text })
+            .joined()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .contains("Set(arrayLiteral:")
+        {
+            print("Set(arrayLiteral: replace!: \(node.argumentList)")
+            
+            let argumentList = node.argumentList.map {
+                $0
+                .withExpression($0.expression)
+                .withLabel($0.label?.withKind(.unknown("")))
+                .withColon($0.colon?.withKind(.unknown("")))
+            }
+            
+            let list = SyntaxFactory.makeTupleExprElementList(argumentList)
+            
+            node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                                                      leftParen: SyntaxFactory.makeLeftBraceToken(),
+                                                      argumentList: list,
+                                                      rightParen: SyntaxFactory.makeRightBraceToken(),
+                                                      trailingClosure: nil,
+                                                      additionalTrailingClosures: nil)
+            return super.visit(node)
+        }
+//        let isSet = (
+//            node.firstToken?.text == "["
+//            &&
+//            node.lastToken?.text == "]"
+//            &&
+//            node.tokens.map { $0.text }.contains(":")
+//        )
+        
+        if isDict {
+            node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("{}")),
+                                                      leftParen: nil,
+                                                      argumentList: SyntaxFactory.makeBlankTupleExprElementList(),
+                                                      rightParen: nil,
+                                                      trailingClosure: nil,
+                                                      additionalTrailingClosures: nil)
+        }
         
         if (node.calledExpression.firstToken?.text ?? "").contains("Set") {
             print("true node.calledExpression : \(node.calledExpression)")
-            
-//            SyntaxFactory.make
-//            node.withCalledExpression(ExprSyntax(SyntaxFactory.makeBlankFunctionCallExpr())
-            
-            // print("hey : \(node.withCalledExpression(ExprSyntax(SyntaxFactory.makeBlankFunctionCallExpr())).firstToken?.text)")
         }
         
         let argumentList = node.argumentList.map {
@@ -244,6 +271,15 @@ public class CodeGenerator: SyntaxRewriter {
         return super.visit(node.withArgumentList(list))
     }
     
+    public override func visit(_ node: CodeBlockSyntax) -> Syntax {
+        print("CodeBlockSyntax node : \(node)")
+        let leftBrace = SyntaxFactory.makeColonToken().withoutTrivia()
+        let rightBrace = SyntaxFactory.makeUnknown("").withoutTrivia().withLeadingTrivia(Trivia.newlines(0))
+        let node = SyntaxFactory.makeCodeBlock(leftBrace: leftBrace, statements: node.statements, rightBrace: rightBrace)
+        
+        return super.visit(node)
+    }
+    
     public override func visit(_ node: FunctionParameterSyntax) -> Syntax {
         print("FunctionParameterSyntax : \(node)")
         let colon = node.firstToken?.withKind(.unknown("")).withoutTrivia()
@@ -251,13 +287,6 @@ public class CodeGenerator: SyntaxRewriter {
         
         return super.visit(node)
     }
-    
-//    public override func visit(_ node: FunctionSignatureSyntax) -> Syntax {
-//        print("FunctionSignatureSyntax node.signature : \(node.input)")
-//        // print("node.tokens : \(node.tokens)")
-//
-//        return Syntax(node)
-//    }
 
     public override func visit(_ node: TupleExprElementListSyntax) -> Syntax {
         print("TupleExprElementListSyntax : \(node)")
@@ -297,54 +326,6 @@ public class CodeGenerator: SyntaxRewriter {
         }
         
         return super.visit(node)
-        
-        
-//        print("TupleExprElementListSyntax node : \(node)")
-        // print("node.first!.expression : \(node.first!.withExpression(T##newChild: ExprSyntax?##ExprSyntax?))")
-//        print("filter : \(isPlainPrint)")
-        
-        
-        
-        // return Syntax(node.inserting(SyntaxFactory.makeBlankTupleExprElement(), at: 0))
-        
-//        let expr = ExprSyntax(
-//          SyntaxFactory.makeIdentifierExpr(
-//            identifier: SyntaxFactory.makeDollarIdentifier(
-//                "{\(node.first!.expression)}"
-//            ),
-//            declNameArguments: nil
-//          )
-//        )
-        
-        
-        
-        // print(f"{name}")
-//        SyntaxFactory.makeTupleExprElement(label: <#T##TokenSyntax?#>, colon: <#T##TokenSyntax?#>, expression: <#T##ExprSyntax#>, trailingComma: <#T##TokenSyntax?#>)
-//        SyntaxFactory.makeTupleExprElementList(<#T##elements: [TupleExprElementSyntax]##[TupleExprElementSyntax]#>)
-        
-        
-//        if node.parent?.firstToken?.text ?? "" == "print" {
-//            if node.count == 1 {
-//                SyntaxFactory.makeTupleExprElementList(<#T##elements: [TupleExprElementSyntax]##[TupleExprElementSyntax]#>)
-//
-//
-////                let left = SyntaxFactory.makeToken(.leftParen, presence: .present)
-////                let right = SyntaxFactory.makeToken(.rightBrace, presence: .present)
-//
-//                // return Syntax(SyntaxFactory.makeIdentifier("fuck you"))
-//
-////                let token = SyntaxFactory.makeTupleExprElementList(SyntaxFactory.makeBlankTupleExprElementList())
-////                let token = SyntaxFactory.makeTupleExpr(leftParen: left,
-////                                            elementList: SyntaxFactory.makeBlankTupleExprElementList(),
-////                                            rightParen:right)
-////                return Syntax(token)
-//                print("got you!")
-//            } else {
-//
-//            }
-//        }
-        
-        // return super.visit(node)
     }
 }
 
@@ -370,17 +351,15 @@ func generateKotlinSyntax(from token: TokenSyntax) -> TokenSyntax {
 func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
     switch token.tokenKind {
         case .funcKeyword:
-            return token.withKind(.unknown("def"))
-        
+            return token.withKind(.identifier("def"))
         case .structKeyword:
             return token.withKind(.classKeyword)
         case .leftBrace:
-            return token.withKind(.colon)
-                .withoutTrivia()
+            return token
+            // return token.withKind(.colon).withoutTrivia()
         case .rightBrace:
-            return token.withKind(.unknown(""))
-                .withoutTrivia()
-                .withLeadingTrivia(Trivia.newlines(0))
+            return token
+                // token.withKind(.unknown("")).withoutTrivia().withLeadingTrivia(Trivia.newlines(0))
         case .letKeyword:
             return token.withKind(.unknown(""))
                 .withTrailingTrivia(Trivia.spaces(0))
