@@ -37,7 +37,8 @@ import Foundation
 //    }
 //}
 
-func indent(source: String, indentType: IndentationType = .tab) -> (Language, String) {
+func indent(source: String,
+            indentType: IndentationType = .tab) -> (Language, String) {
     func recurIndent(lines: [String],
                      index: Int = 0,
                      indentType: IndentationType,
@@ -47,36 +48,58 @@ func indent(source: String, indentType: IndentationType = .tab) -> (Language, St
               case let line = lines[index]
             else { return lines }
 
-        let leftCurlyBracket: Character = "{"
-        let rightCurlyBracket: Character = "}"
+        func calculate(newIndentLevel: Int,
+                                  indentType: IndentationType,
+                                  newLine: String) -> String {
+            String(repeating:indentType.rawValue,
+                   count: newIndentLevel >= 0 ? newIndentLevel : 0) + newLine
+        }
+        
+        let leftBracket: Character = "{"
+        let rightBracket: Character = "}"
         
         var newIndentLevel = indentLevel
         var newLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        let curlyBracketOnlyString = String(newLine.lazy.filter(Set("{}").contains))
+        let bracketOnlyString = String(newLine.lazy.filter(Set("{}").contains))
         
-        if newLine.last == leftCurlyBracket {
-            let indentation = String(repeating:indentType.rawValue,
-                                     count: newIndentLevel >= 0 ? newIndentLevel : 0)
-            newLine = indentation + newLine
+        let isConditionalBranch = (
+            bracketOnlyString.hasPrefix("}")
+            &&
+            bracketOnlyString.hasSuffix("{")
+        )
 
+        if isConditionalBranch {
+            newIndentLevel -= 1
+
+            newLine = calculate(newIndentLevel: newIndentLevel,
+                                indentType: indentType,
+                                newLine: newLine)
+            
+            newIndentLevel += 1
+            
+        } else if newLine.last == leftBracket {
+            newLine = calculate(newIndentLevel: newIndentLevel,
+                                indentType: indentType,
+                                newLine: newLine)
+            
             newIndentLevel += 1
         } else if (
-            newLine.last == rightCurlyBracket
+            newLine.last == rightBracket
             &&
-            !hasPairCurlyBracket(string: curlyBracketOnlyString)
+            !hasPairBracket(string: bracketOnlyString)
         ) {
             newIndentLevel -= 1
 
-            let indentation = String(repeating:indentType.rawValue,
-                                     count: newIndentLevel >= 0 ? newIndentLevel : 0)
-            newLine = indentation + newLine
+            newLine = calculate(newIndentLevel: newIndentLevel,
+                                indentType: indentType,
+                                newLine: newLine)
         } else {
-            let indentation = String(repeating:indentType.rawValue,
-                                     count: newIndentLevel >= 0 ? newIndentLevel : 0)
-            newLine = indentation + newLine
+            newLine = calculate(newIndentLevel: newIndentLevel,
+                                indentType: indentType,
+                                newLine: newLine)
         }
-        
+                
         var lines = lines
         lines[index] = newLine
 
@@ -88,55 +111,59 @@ func indent(source: String, indentType: IndentationType = .tab) -> (Language, St
         )
     }
 
-    func hasPairCurlyBracket(
+    func hasPairBracket(
         string: String,
         index: Int = 0,
-        leftCurlyBrackets: [Character] = [],
-        rightCurlyBrackets: [Character] = []
+        leftBrackets: [Character] = [],
+        rightBrackets: [Character] = []
     ) -> Bool
     {
-        let leftCurlyBracket: Character = "{"
-        let rightCurlyBracket: Character = "}"
+        let leftBracket: Character = "{"
+        let rightBracket: Character = "}"
         
-        guard string.contains(leftCurlyBracket) && string.contains(rightCurlyBracket)
+        guard string.contains(leftBracket) && string.contains(rightBracket)
             else { return false }
         
-        guard string.count - 1 >= index else {
-            return leftCurlyBrackets.count == rightCurlyBrackets.count ? true : false
-        }
+        guard string.count - 1 >= index
+            else {
+                return leftBrackets.count == rightBrackets.count ? true : false
+            }
         
         let stringIndex = string.index(string.startIndex, offsetBy: index)
         let currentChar = string[stringIndex]
         
-        var leftCurlyBrackets = leftCurlyBrackets
-        var rightCurlyBrackets = rightCurlyBrackets
+        var leftBrackets = leftBrackets
+        var rightBrackets = rightBrackets
 
-        if currentChar == leftCurlyBracket {
-            leftCurlyBrackets.append(currentChar)
-        } else if currentChar == rightCurlyBracket {
-            rightCurlyBrackets.append(currentChar)
+        if currentChar == leftBracket {
+            leftBrackets.append(currentChar)
+        } else if currentChar == rightBracket {
+            rightBrackets.append(currentChar)
         }
 
-        return hasPairCurlyBracket(
+        return hasPairBracket(
             string: string,
             index: index+1,
-            leftCurlyBrackets: leftCurlyBrackets,
-            rightCurlyBrackets: rightCurlyBrackets
+            leftBrackets: leftBrackets,
+            rightBrackets: rightBrackets
         )
     }
 
     func takeCode(from source: String) -> String {
-        guard .unknown != recognizeLanguage(from: source) else { return source }
-        return source
-            .components(separatedBy: "\n")
-            .dropFirst()
-            .dropLast()
-            .joined(separator: "\n")
+        .unknown == recognizeLanguage(from: source) ? source :
+            (source
+                .components(separatedBy: "\n")
+                .dropFirst()
+                .dropLast()
+                .joined(separator: "\n"))
     }
 
-    guard hasPairCurlyBracket(string: source) else { return (.unknown, source) }
+    guard hasPairBracket(string: source) else {
+        return (.unknown, source)
+    }
     
-    let lines = takeCode(from: source).components(separatedBy: "\n")
+    let lines = takeCode(from: source)
+        .components(separatedBy: "\n")
     
     return (
         recognizeLanguage(from: source),

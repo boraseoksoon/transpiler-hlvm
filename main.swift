@@ -65,39 +65,49 @@ import SwiftSyntax
 //for i in [0,1,2,3,4] :
 //    print("i : ", i)
 
-let source5 = """
-python {
-    let test = 10
-    let python = "python variable"
-    var yourname = "JSS"
+//if x == 'a':
+//    print(x)
+//elif x == 'b':
+//    print(x)
+//if x in 'bc':
+//    print(x)
+//elif x in 'xyz':
+//    print(x)
+//else:
+//    print(x)
 
-    print("hello python! : \\(test)")
-    print("hello \\(python)! : \\(test)")
-    print("hello how are you ", yourname)
+//enum MyType {
+//    case a
+//    case b
+//}
+//
+//let myType = MyType.a
+//switch myType {
+//    case .a:
+//        print("a!")
+//    case .b:
+//        print("b")
+//}
 
-    func abc(test: String, element: [Int]) -> Void {
-        print("hello python! : \\(test), and element: \\(element)")
-    }
-    abc(test:"hey", element: [0,1])
-}
-"""
 
-func abc(test: String, element: [Int]) -> Void {
-    print("hello python! : \\(test), and element: \\(element)")
-}
-abc(test:"hey", element: [0,1])
+//struct A<T> where T: Equatable {
+//    var a: T
+//}
+//
+//func abc <T: Equatable,S: Hashable>(test: S, element: [T]) -> Void {
+//    print("hello python! : \\(test), and element: \\(element)")
+//}
+//
+//abc(test:"hey", element: [0,1])
 
 //struct Human<T: Equatable> where T: Numeric {
 //    var age: T = 10
 //}
 
-func abc() -> Void {}
-struct Human<T: Equatable> where T: Numeric {
-    var age: T = 10
-}
-
-
-
+//func abc() -> Void {}
+//struct Human<T: Equatable> where T: Numeric {
+//    var age: T = 10
+//}
 
 // pass for now: var set3 = Set<String>(["0", "1"])
 
@@ -117,11 +127,30 @@ struct Human<T: Equatable> where T: Numeric {
 //print("value : ", x["a"])
 //print(type(x))
 
+let source5 = """
+python {
+    let x = true
+    if x == true {
+        print("true")
+    } else if x == false {
+        print("false")
+    } else {
+        print("else!")
+    }
+}
+"""
+
+
 let res = transpile(source5)
 print("*********************")
 print("*********************")
 print("** code generation **")
 print(res)
+
+//let (_, indentedSource) = indent(source: source5)
+//print("take")
+//
+//print(indentedSource)
 
 func transpile(_ source: String, to language: Language? = nil) -> String {
     guard let language = language == nil ? recognizeLanguage(from: source) : language

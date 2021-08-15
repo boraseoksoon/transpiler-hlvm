@@ -402,12 +402,17 @@ public class CodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: CodeBlockSyntax) -> Syntax {
         print("CodeBlockSyntax node : \(node)")
-        let leftBrace = SyntaxFactory.makeColonToken().withoutTrivia()
+        let leftBrace = SyntaxFactory.makeColonToken()
+            .withoutTrivia()
+        
         let rightBrace = SyntaxFactory.makeUnknown("")
             .withoutTrivia()
-            .withLeadingTrivia(Trivia.newlines(0))
+            .withLeadingTrivia(.newlines(1))
+            // .withTrailingTrivia(.newlines(1))
         
-        let node = SyntaxFactory.makeCodeBlock(leftBrace: leftBrace, statements: node.statements, rightBrace: rightBrace)
+        let node = SyntaxFactory.makeCodeBlock(leftBrace: leftBrace,
+                                               statements: node.statements,
+                                               rightBrace: rightBrace)
         
         return super.visit(node)
     }
