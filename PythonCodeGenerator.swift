@@ -1,19 +1,15 @@
 //
-//  CodeGenerator.swift
+//  PythonCodeGenerator.swift
 //  hlvm
 //
-//  Created by Seoksoon Jang on 2021/08/02.
+//  Created by Seoksoon Jang on 2021/08/15.
 //
 
 import Foundation
 import SwiftSyntax
 
-public class CodeGenerator: SyntaxRewriter {
-    private let language: Language
-    
-    init(for language: Language) {
-        self.language = language
-    }
+public class PythonCodeGenerator: SyntaxRewriter {
+    private let language: Language = .python
     
     public override func visit(_ token: TokenSyntax) -> Syntax {
         // return Syntax(token.withKind(.stringLiteral("swift")))
@@ -265,7 +261,6 @@ public class CodeGenerator: SyntaxRewriter {
         {
             print("got dict!")
             
-            let caller = calledExpressionSyntaxString.components(separatedBy: ".")[0]
             // dict.updateValue(100, forKey: "k1")
             // caller => dict
             
@@ -274,6 +269,7 @@ public class CodeGenerator: SyntaxRewriter {
             // keyValue
             // ["100", "\"k1\""]
             
+            let caller = calledExpressionSyntaxString.components(separatedBy: ".")[0]
             let keyValue = node.argumentList.tokens
                 .map { $0.text }
                 .joined()
@@ -287,6 +283,46 @@ public class CodeGenerator: SyntaxRewriter {
                 let key = keyValue[1]
                 
                 let expression = ExprSyntax(SyntaxFactory.makeVariableExpr("\(caller)[\(key)] = \(value)"))
+                let elements = [SyntaxFactory.makeTupleExprElement(
+                    label: nil,
+                    colon: nil,
+                    expression: expression,
+                    trailingComma: nil
+                )]
+                
+                let list = SyntaxFactory.makeTupleExprElementList(elements)
+                node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                                                          leftParen: nil,
+                                                          argumentList: list,
+                                                          rightParen: nil,
+                                                          trailingClosure: nil,
+                                                          additionalTrailingClosures: nil)
+                return super.visit(node.withLeadingTrivia(.newlines(1)))
+                
+            } else {
+                return super.visit(node)
+            }
+            
+        } else if syntaxString.contains("removeValue(") &&
+                  syntaxString.hasSuffix(")") &&
+                  syntaxString.components(separatedBy: ".").count == 2
+        {
+            print("got remove value!")
+            
+            let caller = calledExpressionSyntaxString.components(separatedBy: ".")[0]
+            let keyValue = node.argumentList.tokens
+                .map { $0.text }
+                .joined()
+                .replacingOccurrences(of: ",", with: "")
+                .components(separatedBy: "forKey:")
+            
+            print("divided : \(keyValue)")
+
+            if keyValue.count == 2 {
+                // let value = keyValue[0]
+                let key = keyValue[1]
+
+                let expression = ExprSyntax(SyntaxFactory.makeVariableExpr("del[\(caller)[\(key)]]"))
                 let elements = [SyntaxFactory.makeTupleExprElement(
                     label: nil,
                     colon: nil,
@@ -528,11 +564,11 @@ public class CodeGenerator: SyntaxRewriter {
 //            if name == "print" {
 //                // node.first!
 //                guard let first = node.first else { return super.visit(node) }
-//                
+//
 //                let isPlainPrint = node.tokens.filter {
 //                    $0.text == SyntaxFactory.makeIdentifier("\\").text
 //                }.isEmpty
-//                
+//
 //                let isCommaPrint = !(node.tokens.filter {
 //                    return $0.text == ","
 //                }.isEmpty)
@@ -548,7 +584,7 @@ public class CodeGenerator: SyntaxRewriter {
 //                            trailingComma: nil// SyntaxFactory.makeCommaToken()
 //                        )
 //                    ])
-//                    
+//
 //                    // return Syntax(list)
 //                    return super.visit(list)
 //                }
@@ -581,145 +617,4 @@ public class CodeGenerator: SyntaxRewriter {
         
         return super.visit(node)
     }
-}
-
-func generateSyntax(from token: TokenSyntax, to language: Language) -> TokenSyntax {
-//    print("generated token : \(token)")
-//    print("generated token.tokenKind : \(token.tokenKind)")
-//    print("generated token.tokens : \(token.tokens.map { $0.text })")
-    
-    switch language {
-        case .python:
-            return generatePythonSyntax(from: token)
-        case .kotlin:
-            return generateKotlinSyntax(from: token)
-        default:
-            fatalError("\(language) is not implemented for code generation")
-    }
-}
-
-func generateKotlinSyntax(from token: TokenSyntax) -> TokenSyntax {
-    token.withKind(.stringLiteral("kotlin"))
-}
-
-func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
-    switch token.tokenKind {
-        case .funcKeyword:
-            return token.withKind(.identifier("def"))
-        case .structKeyword:
-            return token.withKind(.classKeyword)
-        case .leftBrace:
-            return token
-            // return token.withKind(.colon).withoutTrivia()
-        case .rightBrace:
-            return token
-                // token.withKind(.unknown("")).withoutTrivia().withLeadingTrivia(Trivia.newlines(0))
-        case .letKeyword:
-            return token.withKind(.unknown(""))
-                .withTrailingTrivia(Trivia.spaces(0))
-        case .varKeyword:
-            return token.withKind(.unknown(""))
-                .withTrailingTrivia(Trivia.spaces(0))
-        default:
-             return token // token.withKind(token.tokenKind)
-
-//            let msg = """
-//            no token text : \(token.text) token Kind : \(token.tokenKind)!
-//            """
-//
-//            fatalError(msg)
-    }
-    
-    
-//    switch token.tokenKind {
-//        case .funcKeyword:
-//            return token.withKind(.unknown("def"))
-//        case .leftAngle:
-//            return token.withKind(token.tokenKind)
-//        case .colon:
-//            return token.withKind(token.tokenKind)
-//        case .leftSquareBracket:
-//            if token.nextToken?.nextToken?.tokenKind == .comma || token.nextToken?.nextToken?.tokenKind == .rightSquareBracket {
-//                return token.withKind(token.tokenKind)
-//            } else {
-//                return token.withKind(.leftBrace)
-//            }
-//        case .rightSquareBracket:
-//            if token.previousToken?.previousToken?.tokenKind == .comma || token.previousToken?.previousToken?.tokenKind == .leftSquareBracket {
-//                return token.withKind(token.tokenKind)
-//            } else {
-//                return token.withKind(.rightBrace)
-//            }
-//        case .structKeyword:
-//            return token.withKind(.classKeyword)
-//        case .identifier(let identifierName):
-//            if case .colon = token.previousToken?.tokenKind {
-//                return token.withKind(.unknown(""))
-//                    .withoutTrivia()
-//            }
-//            return token.withKind(.identifier(identifierName))
-//        case .leftBrace:
-//            return token.withKind(.colon)
-//        case .rightBrace:
-//            return token.withKind(.unknown(""))
-//                .withoutTrivia()
-//                .withLeadingTrivia(Trivia.newlines(1))
-//        case .letKeyword:
-//            return token.withKind(.unknown(""))
-//                .withTrailingTrivia(Trivia.spaces(0))
-//        case .varKeyword:
-//            return token.withKind(.unknown(""))
-//                .withTrailingTrivia(Trivia.spaces(0))
-//        case .integerLiteral(let text):
-//            let integerText = String(text.filter { ("0"..."9").contains($0) })
-//            return token.withKind(.integerLiteral("\(Int(integerText)!)"))
-//        case .leftParen:
-//            return token.withKind(token.tokenKind)
-//        case .rightParen:
-//            return token.withKind(token.tokenKind)
-//
-//        case .comma:
-//            // return token.withKind(.unknown(""))
-//            return token.withKind(token.tokenKind)
-//        case .stringQuote:
-//            return token.withKind(token.tokenKind) // token.withKind(.unknown("{"))
-//        case .stringSegment:
-//            return token.withKind(token.tokenKind)
-//        case .stringInterpolationAnchor:
-//            return token.withKind(token.tokenKind)
-//        case .backslash:
-//            return token.withKind(token.tokenKind)
-//        case .eof:
-//            return token.withKind(token.tokenKind)
-//        default:
-//             return token.withKind(token.tokenKind)
-//
-////            let msg = """
-////            no token text : \(token.text) token Kind : \(token.tokenKind)!
-////            """
-////
-////            fatalError(msg)
-//    }
-}
-
-func makeArray(startIndex: Int, endIndex: Int, isClosedRange: Bool = false) -> ExprSyntax {
-    let array = (isClosedRange ? Array((startIndex..<endIndex)) : Array((startIndex...endIndex))).map {
-        SyntaxFactory.makeArrayElement(
-          expression: ExprSyntax(
-            SyntaxFactory.makeIntegerLiteralExpr(
-              digits: SyntaxFactory.makeIntegerLiteral("\($0)")
-            )
-          ),
-            trailingComma: $0 == endIndex ? nil : (SyntaxFactory.makeCommaToken(trailingTrivia: .spaces(1))
-          )
-        )
-    }
-    
-    return ExprSyntax(
-      SyntaxFactory.makeArrayExpr(
-        leftSquare: SyntaxFactory.makeLeftSquareBracketToken(),
-        elements: SyntaxFactory.makeArrayElementList(array),
-        rightSquare: SyntaxFactory.makeRightSquareBracketToken()
-      )
-    )
 }
