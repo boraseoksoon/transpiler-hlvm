@@ -400,6 +400,22 @@ public class CodeGenerator: SyntaxRewriter {
         return super.visit(node)
     }
     
+    public override func visit(_ node: RepeatWhileStmtSyntax) -> StmtSyntax {
+        print("RepeatWhileStmtSyntax : \(node)")
+
+        let conditions = SyntaxFactory.makeConditionElementList([SyntaxFactory.makeConditionElement(condition: Syntax(node.condition), trailingComma: nil)])
+        
+        
+        let node = SyntaxFactory.makeWhileStmt(labelName: node.labelName,
+                                               labelColon: nil,
+                                               whileKeyword: node.whileKeyword,
+                                               conditions: conditions,
+                                               body: node.body)
+            .withLeadingTrivia(.newlines(1))
+        
+        return super.visit(node)
+    }
+
     public override func visit(_ node: CodeBlockSyntax) -> Syntax {
         print("CodeBlockSyntax node : \(node)")
         let leftBrace = SyntaxFactory.makeColonToken()

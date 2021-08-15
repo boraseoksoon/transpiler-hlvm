@@ -129,16 +129,28 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    let x = true
-    if x == true {
-        print("true")
-    } else if x == false {
-        print("false")
-    } else {
-        print("else!")
-    }
+var i = 0
+let j = true
+
+repeat {
+    print("i : \\(i) and j : \\(j)")
+    
+    i += 1
+} while i <= 10
 }
 """
+
+//var i = 0
+//var cond = false
+//repeat {
+//    print("i : \\(i)")
+//    
+//    i += 1
+//    if i == 5 {
+//        cond = true
+//    }
+//} while i <= 10
+
 
 
 let res = transpile(source5)
