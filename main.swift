@@ -10,10 +10,18 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    var arr3 = [Int(0)]
-    var arr = [Character("a"), Character("b"), Character("c")]
+    let a: Int? = nil
+    if let a = a {
+        print(a)
+    }
 }
 """
+
+//a = 1
+//
+//if a != None:
+//    print(a)
+
 
 let res = transpile(source5)
 print("*********************")

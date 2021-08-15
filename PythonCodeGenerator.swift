@@ -17,11 +17,40 @@ final class PythonCodeGenerator: SyntaxRewriter {
         return Syntax(newToken)
     }
     
+    public override func visit(_ node: OptionalBindingConditionSyntax) -> Syntax {
+        print("OptionalBindingConditionSyntax : \(node)")
+        
+//        let a: Int? = nil
+//        if let a = a {
+//            print(a)
+//        }
+//  =>
+//        a = None
+//        if a is not None:
+//            print(a)
+        
+        let letKeyword = SyntaxFactory.makeIdentifier("")
+        let pattern = node.pattern
+        
+        let value = ExprSyntax(SyntaxFactory.makeVariableExpr("None"))
+        let isNot = SyntaxFactory.makeIdentifier("is not ")
+        let initializer = SyntaxFactory.makeInitializerClause(equal: isNot, value:value)
+
+        let node = SyntaxFactory.makeOptionalBindingCondition(
+            letOrVarKeyword: letKeyword,
+            pattern: pattern,
+            typeAnnotation: nil,
+            initializer: initializer
+        )
+        
+        return super.visit(node)
+    }
+    
     public override func visit(_ node: ArrayElementSyntax) -> Syntax {
         print("ArrayElementSyntax node : \(node)")
         
-        //        var arr = [Character("a"), Character("b"), Character("c")]
-        //        var arr3 = [Int(0)]
+//        var arr = [Character("a"), Character("b"), Character("c")]
+//        var arr3 = [Int(0)]
 //        =>
 //        arr3 = [0]
 //        arr = ["a", "b", "c"]
