@@ -176,7 +176,11 @@ func preprocess(source: String, for language: Language) -> String {
 func finalize(source: String, for language: Language) -> String {
     switch language {
         case .python:
-            return source.replacingOccurrences(of: "print(\"", with: "print(f\"")
+            return source
+                .replacingOccurrences(of: "print(\"", with: "print(f\"")
+                .replacingOccurrences(of: "else if", with: "elif")
+                .replacingOccurrences(of: "true", with: "True")
+                .replacingOccurrences(of: "false", with: "False")
         default:
             return source
     }
