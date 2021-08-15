@@ -92,7 +92,6 @@ abc(test:"hey", element: [0,1])
 //}
 
 func abc() -> Void {}
-
 struct Human<T: Equatable> where T: Numeric {
     var age: T = 10
 }
