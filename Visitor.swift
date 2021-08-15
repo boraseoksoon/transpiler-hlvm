@@ -233,12 +233,16 @@ public class CodeGenerator: SyntaxRewriter {
         print("node.calledExpression : \(node.calledExpression)")
         var node = node
         
+        // dict.updateValue(100, forKey: "k1")
+        // dict["k1"] = 100
+        
         let calledExpressionSyntaxString = node.calledExpression.tokens
             .map { $0.text }
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
     
         print("calledExpressionSyntaxString : \(calledExpressionSyntaxString)")
+        print("node.argumentList : \(node.argumentList)")
         
         let isDict = (
             node.calledExpression.firstToken?.text == "["
@@ -247,11 +251,63 @@ public class CodeGenerator: SyntaxRewriter {
             &&
             node.calledExpression.tokens.map { $0.text }.contains(":")
         )
-        
+
         let syntaxString = node.tokens
             .map ({ $0.text })
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if syntaxString.contains("updateValue(")
+            &&
+            syntaxString.hasSuffix(")")
+            &&
+            syntaxString.components(separatedBy: ".").count == 2
+        {
+            print("got dict!")
+            
+            let caller = calledExpressionSyntaxString.components(separatedBy: ".")[0]
+            // dict.updateValue(100, forKey: "k1")
+            // caller => dict
+            
+            // nocompactMapmentList.tokens
+            // dict.updateValue(100, forKey: "k1")
+            // keyValue
+            // ["100", "\"k1\""]
+            
+            let keyValue = node.argumentList.tokens
+                .map { $0.text }
+                .joined()
+                .replacingOccurrences(of: ",", with: "")
+                .components(separatedBy: "forKey:")
+            
+            print("divided : \(keyValue)")
+            
+            if keyValue.count == 2 {
+                let value = keyValue[0]
+                let key = keyValue[1]
+                
+                let expression = ExprSyntax(SyntaxFactory.makeVariableExpr("\(caller)[\(key)] = \(value)"))
+                let elements = [SyntaxFactory.makeTupleExprElement(
+                    label: nil,
+                    colon: nil,
+                    expression: expression,
+                    trailingComma: nil
+                )]
+                
+                let list = SyntaxFactory.makeTupleExprElementList(elements)
+                node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                                                          leftParen: nil,
+                                                          argumentList: list,
+                                                          rightParen: nil,
+                                                          trailingClosure: nil,
+                                                          additionalTrailingClosures: nil)
+                return super.visit(node.withLeadingTrivia(.newlines(1)))
+                
+            } else {
+                return super.visit(node)
+            }
+            
+        }
         
         if syntaxString.hasPrefix("[") && syntaxString.hasSuffix("]()") {
             print("got him")
@@ -397,6 +453,11 @@ public class CodeGenerator: SyntaxRewriter {
         print("FunctionSignatureSyntax : \(node)")
         var node = node
         node.output = SyntaxFactory.makeBlankReturnClause()
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: ForcedValueExprSyntax) -> ExprSyntax {
+        let node = node.withExclamationMark(SyntaxFactory.makeIdentifier(""))
         return super.visit(node)
     }
     

@@ -129,14 +129,11 @@ import SwiftSyntax
 
 let source5 = """
 python {
-var i = 0
-let j = true
-
-repeat {
-    print("i : \\(i) and j : \\(j)")
-    
-    i += 1
-} while i <= 10
+    var map = ["k1":1, "k2":2]
+    print("map.keys : \\(map.keys)")
+    map.updateValue(100, forKey: "k1")
+    let val = map["k1"]
+    print("val : \\(val!)")
 }
 """
 
