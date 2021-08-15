@@ -49,6 +49,40 @@ public class CodeGenerator: SyntaxRewriter {
         
         return super.visit(node)
     }
+
+    public override func visit(_ node: MemberDeclBlockSyntax) -> Syntax {
+        print("MemberDeclBlockSyntax 좌측 스페이스 추가 if needed: \(node)")
+        return super.visit(node.withLeadingTrivia(.spaces(node.leadingTrivia?.count == 0 ? 1 : 0)))
+    }
+    
+    public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        print("StructDeclSyntax : \(node)")
+        return super.visit(node)
+    }
+
+    public override func visit(_ node: GenericWhereClauseSyntax) -> Syntax {
+        print("GenericWhereClauseSyntax : \(node)")
+        let node =  SyntaxFactory.makeBlankGenericWhereClause()
+        
+//        SyntaxFactory.makeBlankGenericRequirement().tri
+//
+//        SyntaxFactory.makeGenericWhereClause(whereKeyword: <#T##TokenSyntax#>, requirementList: <#T##GenericRequirementListSyntax#>)
+        
+//        lenodet node = SyntaxFactory.makeWhereClause(whereKeyword:SyntaxFactory.makeIdentifier(""),
+//                                      guardResult: ExprSyntax(SyntaxFactory.makeVariableExpr("fuck")))
+        
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: GenericParameterClauseSyntax) -> Syntax {
+        print("GenericParameterClauseSyntax : \(node)")
+        
+        let node = SyntaxFactory.makeBlankGenericParameterClause()
+            // .withTrailingTrivia(.spaces(10))
+            // .withLeadingTrivia(.spaces(10))
+        
+        return super.visit(node)
+    }
     
     public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         // print("VariableDeclSyntax node : \(node)")
@@ -352,11 +386,27 @@ public class CodeGenerator: SyntaxRewriter {
         
         return super.visit(node)
     }
+
+    public override func visit(_ node: ReturnClauseSyntax) -> Syntax {
+        print("ReturnClauseSyntax : \(node)")
+        let node = SyntaxFactory.makeReturnClause(arrow: SyntaxFactory.makeIdentifier(""), returnType: SyntaxFactory.makeTypeIdentifier(""))
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: FunctionSignatureSyntax) -> Syntax {
+        print("FunctionSignatureSyntax : \(node)")
+        var node = node
+        node.output = SyntaxFactory.makeBlankReturnClause()
+        return super.visit(node)
+    }
     
     public override func visit(_ node: CodeBlockSyntax) -> Syntax {
         print("CodeBlockSyntax node : \(node)")
         let leftBrace = SyntaxFactory.makeColonToken().withoutTrivia()
-        let rightBrace = SyntaxFactory.makeUnknown("").withoutTrivia().withLeadingTrivia(Trivia.newlines(0))
+        let rightBrace = SyntaxFactory.makeUnknown("")
+            .withoutTrivia()
+            .withLeadingTrivia(Trivia.newlines(0))
+        
         let node = SyntaxFactory.makeCodeBlock(leftBrace: leftBrace, statements: node.statements, rightBrace: rightBrace)
         
         return super.visit(node)
@@ -369,43 +419,83 @@ public class CodeGenerator: SyntaxRewriter {
         
         return super.visit(node)
     }
-
+    public override func visit(_ node: TupleExprElementSyntax) -> Syntax {
+        print("TupleExprElementSyntax : \(node)")
+        
+        print("node.label : ", node.label?.text)
+        
+        let node = SyntaxFactory.makeTupleExprElement(
+            label: SyntaxFactory.makeIdentifier(""),
+            colon: nil,
+            expression: node.expression,
+            trailingComma: node.trailingComma
+        )
+        return super.visit(node)
+    }
+    
+//    public override func visit(_ node: TupleExprElementSyntax) -> Syntax {
+//        print("TupleExprElementSyntax : \(node)")
+//        return super.visit(node)
+//    }
+        
     public override func visit(_ node: TupleExprElementListSyntax) -> Syntax {
         print("TupleExprElementListSyntax : \(node)")
         print("************")
         
-        if case .identifier(let name) = node.parent?.firstToken?.tokenKind {
-            if name == "print" {
-                // node.first!
-                guard let first = node.first else { return super.visit(node) }
-                
-                let isPlainPrint = node.tokens.filter {
-                    $0.text == SyntaxFactory.makeIdentifier("\\").text
-                }.isEmpty
-                
-                let isCommaPrint = !(node.tokens.filter {
-                    return $0.text == ","
-                }.isEmpty)
-
-                if isCommaPrint {
-                    return super.visit(node)
-                } else {
-                    let list = SyntaxFactory.makeTupleExprElementList([
-                        SyntaxFactory.makeTupleExprElement(
-                            label: isPlainPrint ? nil : SyntaxFactory.makeIdentifier("f"),
-                            colon: nil,
-                            expression: node.first!.expression,  // isPlainPrint ? node.first!.expression : expr,
-                            trailingComma: nil// SyntaxFactory.makeCommaToken()
-                        )
-                    ])
-                    
-                    // return Syntax(list)
-                    return super.visit(list)
-                }
-            }
-        } else {
-            return super.visit(node)
-        }
+//        if case .identifier(let name) = node.parent?.firstToken?.tokenKind {
+//            if name == "print" {
+//                // node.first!
+//                guard let first = node.first else { return super.visit(node) }
+//                
+//                let isPlainPrint = node.tokens.filter {
+//                    $0.text == SyntaxFactory.makeIdentifier("\\").text
+//                }.isEmpty
+//                
+//                let isCommaPrint = !(node.tokens.filter {
+//                    return $0.text == ","
+//                }.isEmpty)
+//
+//                if isCommaPrint {
+//                    return super.visit(node)
+//                } else {
+//                    let list = SyntaxFactory.makeTupleExprElementList([
+//                        SyntaxFactory.makeTupleExprElement(
+//                            label: isPlainPrint ? nil : SyntaxFactory.makeIdentifier("f"),
+//                            colon: nil,
+//                            expression: node.first!.expression,  // isPlainPrint ? node.first!.expression : expr,
+//                            trailingComma: nil// SyntaxFactory.makeCommaToken()
+//                        )
+//                    ])
+//                    
+//                    // return Syntax(list)
+//                    return super.visit(list)
+//                }
+//            }
+//        }
+        
+//        let list = SyntaxFactory.makeTupleExprElementList([
+//            SyntaxFactory.makeTupleExprElement(
+//                label: isPlainPrint ? nil : SyntaxFactory.makeIdentifier("f"),
+//                colon: nil,
+//                expression: node.first!.expression,  // isPlainPrint ? node.first!.expression : expr,
+//                trailingComma: nil// SyntaxFactory.makeCommaToken()
+//            )
+//        ])
+//
+//        // return Syntax(list)
+//        return super.visit(list)
+        
+//        node.tokens.map { $0.text }.joined().components(separatedBy: ",")
+//
+//        let node = SyntaxFactory.makeTupleExprElement(
+//            label: SyntaxFactory.makeIdentifier(""),
+//            colon: nil,
+//            expression: node.first!.expression,
+//            trailingComma: nil
+//        )
+//
+//        let list = SyntaxFactory.makeTupleExprElementList([node])
+        
         
         return super.visit(node)
     }

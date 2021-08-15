@@ -67,11 +67,37 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    for i in (0...10) {
-        print(i)
+    let test = 10
+    let python = "python variable"
+    var yourname = "JSS"
+
+    print("hello python! : \\(test)")
+    print("hello \\(python)! : \\(test)")
+    print("hello how are you ", yourname)
+
+    func abc(test: String, element: [Int]) -> Void {
+        print("hello python! : \\(test), and element: \\(element)")
     }
+    abc(test:"hey", element: [0,1])
 }
 """
+
+func abc(test: String, element: [Int]) -> Void {
+    print("hello python! : \\(test), and element: \\(element)")
+}
+abc(test:"hey", element: [0,1])
+
+//struct Human<T: Equatable> where T: Numeric {
+//    var age: T = 10
+//}
+
+func abc() -> Void {
+
+}
+
+struct Human<T: Equatable> where T: Numeric {
+    var age: T = 10
+}
 
 
 
@@ -95,6 +121,9 @@ python {
 //print(type(x))
 
 let res = transpile(source5)
+print("*********************")
+print("*********************")
+print("** code generation **")
 print(res)
 
 func transpile(_ source: String, to language: Language? = nil) -> String {
@@ -110,11 +139,21 @@ func transpile(_ source: String, to language: Language? = nil) -> String {
 }
 
 func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {
-    CodeGenerator(for: language).visit(AST).description
+    finalize(source:CodeGenerator(for: language).visit(AST).description, for: language)
+    
 }
 
 func preprocess(source: String, for language: Language) -> String {
     source
+}
+
+func finalize(source: String, for language: Language) -> String {
+    switch language {
+        case .python:
+            return source.replacingOccurrences(of: "print(\"", with: "print(f\"")
+        default:
+            return source
+    }
 }
 
 //func inspect(_ node: Syntax) {
