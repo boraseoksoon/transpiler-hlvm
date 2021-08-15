@@ -8,19 +8,18 @@
 import Foundation
 import SwiftSyntax
 
-public class CodeGenerator: SyntaxRewriter {
+final class CodeGenerator: SyntaxRewriter {
     private let language: Language
     private let AST: SourceFileSyntax
+    private let generator: SyntaxRewriter
     
     init(from AST: SourceFileSyntax, for language: Language) {
         self.language = language
         self.AST = AST
-    }
-    
-    func generate() -> String {
+        
         switch language {
             case .python:
-                return PythonCodeGenerator().visit(AST).description
+                self.generator = PythonCodeGenerator()
             case .clojure:
                 fatalError("Unsupported language to transpile!")
             case .javascript:
@@ -34,5 +33,13 @@ public class CodeGenerator: SyntaxRewriter {
             default:
                 fatalError("Unsupported language to transpile!")
         }
+        
     }
 }
+
+extension CodeGenerator {
+    func generate() -> String {
+        self.generator.visit(AST).description
+    }
+}
+

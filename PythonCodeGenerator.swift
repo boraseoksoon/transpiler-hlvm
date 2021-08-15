@@ -8,13 +8,44 @@
 import Foundation
 import SwiftSyntax
 
-public class PythonCodeGenerator: SyntaxRewriter {
+final class PythonCodeGenerator: SyntaxRewriter {
     private let language: Language = .python
     
     public override func visit(_ token: TokenSyntax) -> Syntax {
         // return Syntax(token.withKind(.stringLiteral("swift")))
         let newToken = generateSyntax(from: token, to: language)
         return Syntax(newToken)
+    }
+    
+    public override func visit(_ node: ArrayElementSyntax) -> Syntax {
+        print("ArrayElementSyntax node : \(node)")
+        
+        //        var arr = [Character("a"), Character("b"), Character("c")]
+        //        var arr3 = [Int(0)]
+//        =>
+//        arr3 = [0]
+//        arr = ["a", "b", "c"]
+
+        let elementTokenString = node.tokens
+            .map { $0.text }
+            .joined()
+        
+        let intermediate = elementTokenString
+            .components(separatedBy: "(")
+        
+        guard intermediate.count == 2,
+              let value = intermediate[1]
+                .components(separatedBy: ")")
+                .first
+        else {
+            return super.visit(node)
+        }
+        
+        let expression = SyntaxFactory.makeVariableExpr(value)
+        let expreressionSyntax = ExprSyntax(expression)
+        let node = node.withExpression(expreressionSyntax)
+        
+        return super.visit(node)
     }
     
     public override func visit(_ node: DictionaryExprSyntax) -> ExprSyntax {

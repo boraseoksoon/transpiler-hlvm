@@ -10,22 +10,8 @@ import SwiftSyntax
 
 let source5 = """
 python {
-    var arr: [Int] = [0,1,2,3,4,5]
-    var arr2: [String] = ["", "abc"]
-    var arr3 = [Character("a") ,Character("b"), Character("c")]
-
-    print(type(of: arr))
-    print(type(of: arr2))
-    print(type(of: arr3))
-
-
-    struct Human {
-        var arr: [Int]
-        var set: <Int>
-        var map: [Int : Int]
-    }
-
-    var employees = [Human<Programmer>]()
+    var arr3 = [Int(0)]
+    var arr = [Character("a"), Character("b"), Character("c")]
 }
 """
 
