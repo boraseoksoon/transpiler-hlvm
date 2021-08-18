@@ -5,6 +5,24 @@
 //  Created by Seoksoon Jang on 2021/08/15.
 //
 
+/* Kotlin */
+
+
+/* Python */
+let source5 = """
+python {
+    func a() {
+        let a = 10
+        let b = 20
+        // does not work now { return }
+        guard a != b, a == 10, b == 20 else { return }
+        
+        print("come in!")
+    }
+
+    a()
+}
+"""
 //let x = Set<Int>()
 //var arr: [Int] = []
 

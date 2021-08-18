@@ -8,31 +8,20 @@
 import Foundation
 import SwiftSyntax
 
-let source5 = """
-python {
-    let a: Int? = nil
-    if let a = a {
-        print(a)
-    }
+let source = """
+kotlin {
+    
 }
 """
 
-//a = 1
-//
-//if a != None:
-//    print(a)
-
-
-let res = transpile(source5)
+let transformedCode = transpile(source, to: .kotlin)
+transformedCode
 print("*********************")
 print("*********************")
 print("** code generation **")
-print(res)
-
-//let (_, indentedSource) = indent(source: source5)
-//print("take")
-//
-//print(indentedSource)
+print("*********************")
+print("*********************")
+print(transformedCode)
 
 func transpile(_ source: String, to language: Language? = nil) -> String {
     guard let language = language == nil ? recognizeLanguage(from: source) : language
@@ -49,7 +38,8 @@ func transpile(_ source: String, to language: Language? = nil) -> String {
 }
 
 func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {
-    finalize(source:CodeGenerator(from: AST, for: language).generate(), for: language)
+    finalize(source: CodeGenerator(from: AST, for: language).generate(),
+             for: language)
 }
 
 func validCheck(source: String, for language: Language) -> Bool {
@@ -68,6 +58,8 @@ func finalize(source: String, for language: Language) -> String {
                 .replacingOccurrences(of: "else if", with: "elif")
                 .replacingOccurrences(of: "true", with: "True")
                 .replacingOccurrences(of: "false", with: "False")
+//                .replacingOccurrences(of: "let", with: "")
+//                .replacingOccurrences(of: "var", with: "")
         default:
             return source
     }

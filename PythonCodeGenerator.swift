@@ -17,33 +17,117 @@ final class PythonCodeGenerator: SyntaxRewriter {
         return Syntax(newToken)
     }
     
+    public override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
+        // print("ReturnStmtSyntax : \(node)")
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
+        print("GuardStmtSyntax : \(node)")
+        
+        print("node.conditions : \(node.conditions)")
+        print("node.conditions.tokens : ", node.conditions.tokens.map { $0.text })
+        
+        let guardKeyword = SyntaxFactory.makeIfKeyword()
+            .withLeadingTrivia(node.leadingTrivia ?? .newlines(1))
+            .withTrailingTrivia(.spaces(1))
+        
+        var isNoneVariable = false
+        // let tokens = node.conditions.tokens.map { $0.text }
+        
+        var tempTokens = [[String]]()
+        node.conditions.forEach {
+            let newTokens = ($0.tokens.compactMap { $0.text }.count == 1 ? ["not"] + $0.tokens.compactMap { $0.text } : $0.tokens.compactMap { $0.text })
+            tempTokens.append(newTokens)
+        }
+        let tokens = tempTokens.flatMap { $0 }
+        
+        let conditions = SyntaxFactory.makeConditionElementList(
+            tokens
+                .filter { !($0 == "let" || $0 == "var") }
+                .map {
+                func makeTokenTuple(_ tokenText: String) -> (String, Int) {
+                    if isNoneVariable {
+                        isNoneVariable = false
+                        return ("None", 1)
+                    }
+                    var token = tokenText
+                    var spaces = 1
+                    // guard let a = a else {
+                    // if a == None
+                    switch tokenText {
+                        case ",":
+                            token = "and"
+                            spaces = 1
+                        case "!":
+                            token = ""
+                            spaces = 0
+                        case "=":
+                            token = "=="
+                            spaces = 1
+                            isNoneVariable = true
+                        case "==":
+                            token = "!="
+                            spaces = 1
+                        case "!=":
+                            token = "=="
+                            spaces = 1
+                        default:
+                            break
+                    }
+                    
+                    return (token, spaces)
+                }
+                
+                let (token, spaces) = makeTokenTuple($0)
+
+                return SyntaxFactory.makeConditionElement(condition: Syntax(SyntaxFactory.makeIdentifier(token).withTrailingTrivia(.spaces(spaces))),
+                                                          trailingComma: nil)
+            }
+        )
+        
+        let node = SyntaxFactory.makeGuardStmt(guardKeyword: guardKeyword,
+                                               conditions: conditions,
+                                               elseKeyword: SyntaxFactory.makeIdentifier(""),
+                                               body: node.body)
+        // if a == a:
+        // guard a = a else :
+        
+        return super.visit(node)
+    }
+    
     public override func visit(_ node: OptionalBindingConditionSyntax) -> Syntax {
         print("OptionalBindingConditionSyntax : \(node)")
         
-//        let a: Int? = nil
-//        if let a = a {
-//            print(a)
-//        }
-//  =>
-//        a = None
-//        if a is not None:
-//            print(a)
-        
-        let letKeyword = SyntaxFactory.makeIdentifier("")
-        let pattern = node.pattern
-        
-        let value = ExprSyntax(SyntaxFactory.makeVariableExpr("None"))
-        let isNot = SyntaxFactory.makeIdentifier("is not ")
-        let initializer = SyntaxFactory.makeInitializerClause(equal: isNot, value:value)
+        if (node.parent?.parent?.parent?.firstToken?.text ?? "") == "guard" {
+            return super.visit(node)
+        } else {
+            
+    //        let a: Int? = nil
+    //        if let a = a {
+    //            print(a)
+    //        }
+    //  =>
+    //        a = None
+    //        if a is not None:
+    //            print(a)
+            
+            let letKeyword = SyntaxFactory.makeIdentifier("")
+            let pattern = node.pattern
+            
+            let value = ExprSyntax(SyntaxFactory.makeVariableExpr("None"))
+            let isNot = SyntaxFactory.makeIdentifier("is not ")
+            let initializer = SyntaxFactory.makeInitializerClause(equal: isNot, value:value)
 
-        let node = SyntaxFactory.makeOptionalBindingCondition(
-            letOrVarKeyword: letKeyword,
-            pattern: pattern,
-            typeAnnotation: nil,
-            initializer: initializer
-        )
-        
-        return super.visit(node)
+            let node = SyntaxFactory.makeOptionalBindingCondition(
+                letOrVarKeyword: letKeyword,
+                pattern: pattern,
+                typeAnnotation: nil,
+                initializer: initializer
+            )
+            
+            return super.visit(node)
+        }
     }
     
     public override func visit(_ node: ArrayElementSyntax) -> Syntax {
@@ -157,6 +241,7 @@ final class PythonCodeGenerator: SyntaxRewriter {
             case emptyArray
             case none
         }
+        
         func makePatternBindingSyntax(node: PatternBindingSyntax, type: PatternBindingSyntaxType) -> PatternBindingSyntax {
             
             var expression: ExprSyntax!
@@ -581,7 +666,6 @@ final class PythonCodeGenerator: SyntaxRewriter {
         let rightBrace = SyntaxFactory.makeUnknown("")
             .withoutTrivia()
             .withLeadingTrivia(.newlines(1))
-            // .withTrailingTrivia(.newlines(1))
         
         let node = SyntaxFactory.makeCodeBlock(leftBrace: leftBrace,
                                                statements: node.statements,

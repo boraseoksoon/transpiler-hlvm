@@ -18,6 +18,8 @@ final class CodeGenerator: SyntaxRewriter {
         self.AST = AST
         
         switch language {
+            case .kotlin:
+                self.generator = KotlinCodeGenerator()
             case .python:
                 self.generator = PythonCodeGenerator()
             case .clojure:
