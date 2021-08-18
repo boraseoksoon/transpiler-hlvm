@@ -10,18 +10,25 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-    
+    func double(x: Int) -> Int {
+        return 10 * x
+    }
+
+    let result = double(20)
+    print(result)
 }
 """
 
 let transformedCode = transpile(source, to: .kotlin)
-transformedCode
+
 print("*********************")
 print("*********************")
 print("** code generation **")
 print("*********************")
 print("*********************")
+print("")
 print(transformedCode)
+print("")
 
 func transpile(_ source: String, to language: Language? = nil) -> String {
     guard let language = language == nil ? recognizeLanguage(from: source) : language
@@ -47,11 +54,30 @@ func validCheck(source: String, for language: Language) -> Bool {
 }
 
 func preprocess(source: String, for language: Language) -> String {
-    source
+    switch language {
+        case .kotlin:
+        return source
+            .replacingOccurrences(of: "var", with: "var")
+            .replacingOccurrences(of: "let", with: "val")
+            .replacingOccurrences(of: "init", with: "constructor")
+            .replacingOccurrences(of: "self", with: "this")
+            .replacingOccurrences(of: "->", with: ":")
+            .replacingOccurrences(of: "??", with: "?:")
+            .replacingOccurrences(of: "func", with: "fun")
+        
+            // bug // .replacingOccurrences(of: "!", with: "!!")
+        case .python:
+            return source
+        default:
+            return source
+    }
+
 }
 
 func finalize(source: String, for language: Language) -> String {
     switch language {
+        case .kotlin:
+            return source
         case .python:
             return source
                 .replacingOccurrences(of: "print(\"", with: "print(f\"")
