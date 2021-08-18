@@ -1,4 +1,4 @@
-#  Kotlin Feature Complete
+#  Feature Completed list for Kotlin  
 
 good to read for syntatical difference on the surface: 
 https://willowtreeapps.com/ideas/swift-and-kotlin-the-subtle-differences

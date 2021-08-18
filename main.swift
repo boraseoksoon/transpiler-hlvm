@@ -10,16 +10,20 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-    func double(x: Int) -> Int {
-        return 10 * x
+    func double(x: Int, y: Int) -> Int {
+        return y * x
     }
 
-    let result = double(20)
-    print(result)
+    let x = 20
+    let y = 30
+    let result = double(x:x, y:y)
+    print("\\(x) * \\(y) : \\(result)")
 }
 """
 
 let transformedCode = transpile(source, to: .kotlin)
+
+
 
 print("*********************")
 print("*********************")
@@ -64,7 +68,6 @@ func preprocess(source: String, for language: Language) -> String {
             .replacingOccurrences(of: "->", with: ":")
             .replacingOccurrences(of: "??", with: "?:")
             .replacingOccurrences(of: "func", with: "fun")
-        
             // bug // .replacingOccurrences(of: "!", with: "!!")
         case .python:
             return source
