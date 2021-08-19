@@ -14,8 +14,8 @@ import class Foundation.Bundle
 //let result = double(x:x, y:y)
 //print("\\(x) * \\(y) : \\(result)")
 
-final class hlvmTests: XCTestCase {
-    func testExample() throws {
+final class kotlinTests: XCTestCase {
+    func testKotlin() throws {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
@@ -42,7 +42,7 @@ final class hlvmTests: XCTestCase {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8)
 
-        XCTAssertNotEqual(output, "Hello, world!\n")
+        XCTAssertEqual(output, "Hello, world!\n")
         #endif
     }
 

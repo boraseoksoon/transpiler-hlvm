@@ -10,20 +10,33 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-    func double(x: Int, y: Int) -> Int {
-        return y * x
-    }
-
-    let x = 20
-    let y = 30
-    let result = double(x:x, y:y)
-    print("\\(x) * \\(y) : \\(result)")
+    let arr = [Int]()
+    let arr2: [String] = [String]()
 }
 """
 
-let transformedCode = transpile(source, to: .kotlin)
+let arr = [Int]()
+let arr2: [String] = [String]()
 
 
+
+// let num = [1,2,3,4]
+// val num = arrayOf(1, 2, 3, 4)
+
+// let array = Array<Int>(arrayLiteral:1,2,3)
+// val num = arrayOf<Int>(1, 2, 3)
+
+// let arr: [Int] = []
+// val arr: Array<Int> = emptyArray<Int>()
+
+let array = Array<Int>(arrayLiteral:1,2,3)
+// val num = arrayOf<Int>(1, 2, 3)
+
+for element in array {
+    print(element)
+}
+
+let transformedCode = transpile(source)
 
 print("*********************")
 print("*********************")
@@ -58,17 +71,10 @@ func validCheck(source: String, for language: Language) -> Bool {
 }
 
 func preprocess(source: String, for language: Language) -> String {
+    // WARN: Parser does not work properly if replaced ahead of time
     switch language {
         case .kotlin:
         return source
-            .replacingOccurrences(of: "var", with: "var")
-            .replacingOccurrences(of: "let", with: "val")
-            .replacingOccurrences(of: "init", with: "constructor")
-            .replacingOccurrences(of: "self", with: "this")
-            .replacingOccurrences(of: "->", with: ":")
-            .replacingOccurrences(of: "??", with: "?:")
-            .replacingOccurrences(of: "func", with: "fun")
-            // bug // .replacingOccurrences(of: "!", with: "!!")
         case .python:
             return source
         default:
@@ -81,6 +87,16 @@ func finalize(source: String, for language: Language) -> String {
     switch language {
         case .kotlin:
             return source
+                .replacingOccurrences(of: "var", with: "var")
+                .replacingOccurrences(of: "let", with: "val")
+                .replacingOccurrences(of: "init", with: "constructor")
+                .replacingOccurrences(of: "self", with: "this")
+                .replacingOccurrences(of: "->", with: ":")
+                .replacingOccurrences(of: "??", with: "?:")
+                .replacingOccurrences(of: "func", with: "fun")
+                .replacingOccurrences(of: "protocol", with: "interface")
+                .replacingOccurrences(of: "@objc", with: "")
+                .replacingOccurrences(of: "@objcMembers", with: "")
         case .python:
             return source
                 .replacingOccurrences(of: "print(\"", with: "print(f\"")
