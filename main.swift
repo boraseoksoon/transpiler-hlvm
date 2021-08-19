@@ -10,50 +10,28 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-let array: [Int] = [Int](arrayLiteral: 1,2,3)
-for element in array {
-    print(element)
-}
+    let a = true
+    let b = 1000
+    let c = 0
 
+    let d = a ? b : c
+    print("d is \\(d)")
 }
 """
 
-//let array: [Int] = [Int](arrayLiteral: 1,2,3)
-//let array2: [String] = [String](arrayLiteral: "a", "yo")
-//let array3 = [String](arrayLiteral: "a", "yo")
-//let array4 = [1,2,3]
-//let array5: [Int] = []
-//let array6 = [String]()
-//let array7: [Int] = [1,2,3]
-//let array9: [String] = ["a", "man"]
+let a = true
+let b = 1000
+let c = 0
+
+let d = a ? b : c
+print("d is \(d)")
+
+//var a = true
+//val b: Int = 1000
+//val c = 0
 //
-//print("\(array)\(array2)\(array3)\(array4)\(array5)\(array6)\(array7)\(array9)")
-
-// val array = arrayOf(1,2,3)
-
-//let array: [Int] = [Int](arrayLiteral: 1,2,3)
-//let array2: [String] = [String](arrayLiteral: "a", "yo")
-//print("array : \\(array)")
-
-// val num = arrayOf(1, 2, 3)
-
-// let num = [1,2,3,4]
-// val num = arrayOf(1, 2, 3, 4)
-
-// let array = Array<Int>(arrayLiteral:1,2,3)
-// val num = arrayOf<Int>(1, 2, 3)
-
-// let arr: [Int] = []
-// val arr: Array<Int> = emptyArray<Int>()
-
-// let array = Array<Int>(arrayLiteral:1,2,3)
-// val num = arrayOf<Int>(1, 2, 3)
-
-let array: [Int] = [Int](arrayLiteral: 1,2,3)
-
-for element in array {
-    print(element)
-}
+//val d =  if (a) b else c
+//print("d is ${d}")
 
 let transformedCode = transpile(source)
 

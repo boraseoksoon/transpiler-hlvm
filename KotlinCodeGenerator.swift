@@ -16,23 +16,31 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         return super.visit(token)
     }
     
-    public override func visit(_ node: CodeBlockItemSyntax) -> Syntax {
-        print("CodeBlockItemSyntax : \(node)")
-//
-//        print("node.item : \(node.item)")
-//
-//        let tokenString = node.item.tokens.map { $0.text }
-//        if tokenString.contains("for") && tokenString.contains("in") {
-//            var tokens = node.item.tokens.map { $0.text }
-//            tokens.insert("(", at: 1)
-//            tokens.insert(")", at: 5)
-//
-//            let item = Syntax(SyntaxFactory.makeIdentifier(tokens.joined(separator: " ")))
-//            let node = SyntaxFactory.makeCodeBlockItem(item: item, semicolon: nil, errorTokens: nil)
-//
-//            return super.visit(node)
-//        }
-
+//    public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
+//    }
+    
+    public override func visit(_ node: ExprListSyntax) -> Syntax {
+        print("ExprListSyntax : ", node.tokens.map { $0.text })
+                
+        guard node.previousToken?.text ?? "" == SyntaxFactory.makeIfKeyword().text
+            else { return super.visit(node) }
+        
+        //        var a = 10
+        //        let b: Int = 1000
+        //
+        //        if a > b { => if (a > b) {
+        //          print("Choose a")
+        //        } else {
+        //          print("Choose b")
+        //        }
+        
+        let node = node
+            .withoutTrivia()
+            .prepending(ExprSyntax(SyntaxFactory.makeVariableExpr("(")))
+            .appending(ExprSyntax(SyntaxFactory.makeVariableExpr(")")))
+            .withTrailingTrivia(.spaces(1))
+        
+        print("ExprListSyntax : \(node)")
         return super.visit(node)
     }
 
@@ -40,12 +48,19 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         print("InitializerClauseSyntax : \(node)")        
         var node = node
         
-        let valueTokens = node.value.tokens.map { $0.text }.joined()
+        let valueTokens = node.value.tokens
+            .map { $0.text }
+            .joined()
         let isArray = valueTokens.hasPrefix("[") && valueTokens.hasSuffix("]")
         
         if isArray {
-            let arrayValues = node.value.tokens.filter { !($0.text == "[" || $0.text == "]") }.map { $0.text }.joined()
-            node = node.withValue(ExprSyntax(SyntaxFactory.makeVariableExpr("arrayOf(" + arrayValues + ")")))
+            let arrayValues = node.value.tokens
+                .filter { !($0.text == "[" || $0.text == "]") }
+                .map { $0.text }
+                .joined()
+            let exprString = "arrayOf(" + arrayValues + ")"
+            let expr = ExprSyntax(SyntaxFactory.makeVariableExpr(exprString))
+            node = node.withValue(expr)
         }
         
         return super.visit(node)
@@ -85,7 +100,9 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         
         let spaces = node.tokens.map { $0.text }.contains(SyntaxFactory.makeEqualToken().text) ? 1 : 0
         let left = SyntaxFactory.makeIdentifier("Array<")
-        let right = SyntaxFactory.makeIdentifier(">").withTrailingTrivia(.spaces(spaces))
+        let right = SyntaxFactory
+            .makeIdentifier(">")
+            .withTrailingTrivia(.spaces(spaces))
         
         let node = SyntaxFactory.makeArrayExpr(
             leftSquare: left,
@@ -100,7 +117,9 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         print("ArrayTypeSyntax : \(node)")
         
         let left = SyntaxFactory.makeIdentifier("Array<")
-        let right = SyntaxFactory.makeIdentifier(">").withTrailingTrivia(.spaces(1))
+        let right = SyntaxFactory
+            .makeIdentifier(">")
+            .withTrailingTrivia(.spaces(1))
         
         let node = SyntaxFactory.makeArrayType(
             leftSquareBracket: left,
@@ -113,7 +132,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: ForInStmtSyntax) -> StmtSyntax {
         print("ForInStmtSyntax : \(node)")
-//        
+//
 //        print("node.labelName : \(node.labelName?.text)")
 //        print("node.labelColon : \(node.labelColon?.text)")
 //        print("node.forKeyword : \(node.forKeyword.text)")
@@ -126,7 +145,11 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //        print("node.body : \(node.body)")
 
         let expr = "\(node.sequenceExpr.description.trimmingCharacters(in: .whitespacesAndNewlines)))"
-        let forKeyword = SyntaxFactory.makeIdentifier("for (").withLeadingTrivia(node.leadingTrivia ?? .newlines(0))
+        
+        let forKeyword = SyntaxFactory
+            .makeIdentifier("for (")
+            .withLeadingTrivia(node.leadingTrivia ?? .newlines(0))
+        
         let sequenceExpr = ExprSyntax(
             SyntaxFactory
                 .makeVariableExpr(expr)
@@ -157,10 +180,6 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         print("FunctionCallExprSyntax : \(node)")
-        
-        print("node.argumentList : \(node.argumentList)")
-        print("node.calledExpression : \(node.calledExpression)")
-        print("go : \(node.calledExpression.tokens.map { $0.text })")
         
         guard !(node.previousToken?.firstToken?.text.contains("fun") ?? true) else {
             return super.visit(node)
@@ -227,12 +246,12 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         } else {
             let isArray = calledExpressionTokenJoined.hasPrefix("[") && calledExpressionTokenJoined.hasSuffix("]")
             
-            print("calledExpressionTokenJoined : \(calledExpressionTokenJoined)")
-            print("node.leftParen : \(node.leftParen?.text)")
-            print("node.argumentList : \(node.argumentList)")
-            print("node.rightParen : \(node.rightParen?.text)")
-            print("node.trailingClosure : \(node.trailingClosure)")
-            print("node.additionalTrailingClosures : \(node.additionalTrailingClosures)")
+//            print("calledExpressionTokenJoined : \(calledExpressionTokenJoined)")
+//            print("node.leftParen : \(node.leftParen?.text)")
+//            print("node.argumentList : \(node.argumentList)")
+//            print("node.rightParen : \(node.rightParen?.text)")
+//            print("node.trailingClosure : \(node.trailingClosure)")
+//            print("node.additionalTrailingClosures : \(node.additionalTrailingClosures)")
             
 //            [Int]
 //            emptyArray<Int>()

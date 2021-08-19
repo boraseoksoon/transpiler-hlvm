@@ -5,6 +5,7 @@ import class Foundation.Bundle
 
 // Kotlin
 
+// func + print
 //func double(x: Int, y: Int) -> Int {
 //    return y * x
 //}
@@ -13,6 +14,27 @@ import class Foundation.Bundle
 //let y = 30
 //let result = double(x:x, y:y)
 //print("\\(x) * \\(y) : \\(result)")
+
+// array + for
+
+//let array: [Int] = [Int](arrayLiteral: 1,2,3)
+//let array2: [String] = [String](arrayLiteral: "a", "yo")
+//let array3 = [String](arrayLiteral: "a", "yo")
+//let array4 = [1,2,3]
+//let array5: [Int] = []
+//let array6 = [String]()
+//let array7: [Int] = [1,2,3]
+//let array9: [String] = ["a", "man"]
+//
+//print("\(array)\(array2)\(array3)\(array4)\(array5)\(array6)\(array7)\(array9)")
+
+// val array = arrayOf(1,2,3)
+
+//let array: [Int] = [Int](arrayLiteral: 1,2,3)
+//for element in array {
+//    print(element)
+//}
+
 
 final class kotlinTests: XCTestCase {
     func testKotlin() throws {
