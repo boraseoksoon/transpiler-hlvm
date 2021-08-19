@@ -19,12 +19,14 @@ kotlin {
 }
 """
 
-let a = true
-let b = 1000
-let c = 0
+//let a = true
+//let b = 1000
+//let c = 0
+//
+//let d = a ? b : c
+//val d =  if (a) b else c
 
-let d = a ? b : c
-print("d is \(d)")
+//print("d is \(d)")
 
 //var a = true
 //val b: Int = 1000

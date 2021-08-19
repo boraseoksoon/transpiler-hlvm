@@ -19,6 +19,22 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //    public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
 //    }
     
+    public override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
+        print("TernaryExprSyntax : \(node)")
+        
+        let node = SyntaxFactory.makeTernaryExpr(
+            conditionExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("if (\(node.conditionExpression.withoutTrivia()))")
+                                                .withTrailingTrivia(.spaces(1))),
+            questionMark: SyntaxFactory.makeIdentifier(""),
+            firstChoice: node.firstChoice,
+            colonMark: SyntaxFactory.makeIdentifier("else")
+                .withTrailingTrivia(.spaces(1)),
+            secondChoice:node.secondChoice
+        )
+        
+        return super.visit(node)
+    }
+    
     public override func visit(_ node: ExprListSyntax) -> Syntax {
         print("ExprListSyntax : ", node.tokens.map { $0.text })
                 
