@@ -20,9 +20,38 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         print("CodeBlockItemSyntax : \(node)")
         return super.visit(node)
     }
-    
+
+    public override func visit(_ node: InitializerClauseSyntax) -> Syntax {
+        print("InitializerClauseSyntax : \(node)")        
+        var node = node
+        
+        let valueTokens = node.value.tokens.map { $0.text }.joined()
+        let isArray = valueTokens.hasPrefix("[") && valueTokens.hasSuffix("]")
+        
+        if isArray {
+            let arrayValues = node.value.tokens.filter { !($0.text == "[" || $0.text == "]") }.map { $0.text }.joined()
+            node = node.withValue(ExprSyntax(SyntaxFactory.makeVariableExpr("arrayOf(" + arrayValues + ")")))
+        }
+        
+        return super.visit(node)
+    }
+        
+    public override func visit(_ node: PatternBindingSyntax) -> Syntax {
+        print("PatternBindingSyntax : \(node)")
+        return super.visit(node)
+    }
+        
     public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         print("VariableDeclSyntax node : \(node)")
+        print("node.bindings : \(node.bindings)")
+
+//        let node = SyntaxFactory.makeVariableDecl(
+//            attributes: node.attributes,
+//            modifiers: node.modifiers,
+//            letOrVarKeyword: node.letOrVarKeyword,
+//            bindings: node.bindings
+//        )
+        
         return super.visit(node)
     }
     
@@ -85,10 +114,43 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         }
         
         var node = node
-
+        
         let isPrint = node.calledExpression.description.contains("print")
         
-        if isPrint {
+        let syntaxString = node.tokens
+            .map ({ $0.text })
+            .joined()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        let calledExpressionTokenJoined = node.calledExpression.tokens
+            .map { $0.text }
+            .joined()
+
+        if syntaxString.contains("(arrayLiteral:") {
+            print("(arrayLiteral: replace!: \(node.argumentList)")
+            let left = SyntaxFactory.makeIdentifier("arrayOf(")
+            let right = SyntaxFactory.makeIdentifier(")")
+
+            let argumentList = node.argumentList
+                .map {
+                    $0
+                    .withExpression($0.expression)
+                    .withLabel($0.label?.withKind(.unknown("")))
+                    .withColon($0.colon?.withKind(.unknown("")).withoutTrivia())
+                }
+            
+            let list = SyntaxFactory.makeTupleExprElementList(argumentList)
+            
+            node = SyntaxFactory.makeFunctionCallExpr(
+                calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                leftParen: left,
+                argumentList: list,
+                rightParen: right,
+                trailingClosure: node.trailingClosure,
+                additionalTrailingClosures: node.additionalTrailingClosures
+            )
+            
+        } else if isPrint {
             let colon = isPrint ? nil : SyntaxFactory.makeIdentifier("=")
             let list = SyntaxFactory.makeTupleExprElementList(
                 node.argumentList.map {
@@ -110,10 +172,6 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 additionalTrailingClosures: node.additionalTrailingClosures
             )
         } else {
-            let calledExpressionTokenJoined = node.calledExpression.tokens
-                .map { $0.text }
-                .joined()
-            
             let isArray = calledExpressionTokenJoined.hasPrefix("[") && calledExpressionTokenJoined.hasSuffix("]")
             
             print("calledExpressionTokenJoined : \(calledExpressionTokenJoined)")
@@ -145,8 +203,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 )
             }
         }
-        
-        
+
         return super.visit(node)
     }
     
