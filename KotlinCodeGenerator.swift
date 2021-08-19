@@ -18,6 +18,21 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: CodeBlockItemSyntax) -> Syntax {
         print("CodeBlockItemSyntax : \(node)")
+//
+//        print("node.item : \(node.item)")
+//
+//        let tokenString = node.item.tokens.map { $0.text }
+//        if tokenString.contains("for") && tokenString.contains("in") {
+//            var tokens = node.item.tokens.map { $0.text }
+//            tokens.insert("(", at: 1)
+//            tokens.insert(")", at: 5)
+//
+//            let item = Syntax(SyntaxFactory.makeIdentifier(tokens.joined(separator: " ")))
+//            let node = SyntaxFactory.makeCodeBlockItem(item: item, semicolon: nil, errorTokens: nil)
+//
+//            return super.visit(node)
+//        }
+
         return super.visit(node)
     }
 
@@ -93,6 +108,44 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             rightSquareBracket: right
         )
         
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: ForInStmtSyntax) -> StmtSyntax {
+        print("ForInStmtSyntax : \(node)")
+//        
+//        print("node.labelName : \(node.labelName?.text)")
+//        print("node.labelColon : \(node.labelColon?.text)")
+//        print("node.forKeyword : \(node.forKeyword.text)")
+//        print("node.caseKeyword : \(node.caseKeyword?.text)")
+//        print("node.pattern : \(node.pattern.tokens.map { $0.text })")
+//        print("node.typeAnnotation : \(node.typeAnnotation)")
+//        print("node.inKeyword : \(node.inKeyword)")
+//        print("node.sequenceExpr : \(node.sequenceExpr)")
+//        print("node.whereClause : \(node.whereClause)")
+//        print("node.body : \(node.body)")
+
+        let expr = "\(node.sequenceExpr.description.trimmingCharacters(in: .whitespacesAndNewlines)))"
+        let forKeyword = SyntaxFactory.makeIdentifier("for (").withLeadingTrivia(node.leadingTrivia ?? .newlines(0))
+        let sequenceExpr = ExprSyntax(
+            SyntaxFactory
+                .makeVariableExpr(expr)
+                .withTrailingTrivia(.spaces(1))
+        )
+
+        let node = SyntaxFactory.makeForInStmt(
+            labelName: node.labelName,
+            labelColon: node.labelColon,
+            forKeyword: forKeyword,
+            caseKeyword: node.caseKeyword,
+            pattern: node.pattern,
+            typeAnnotation: node.typeAnnotation,
+            inKeyword: node.inKeyword,
+            sequenceExpr: sequenceExpr,
+            whereClause: node.whereClause,
+            body:node.body
+        )
+
         return super.visit(node)
     }
     
