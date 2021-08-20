@@ -20,12 +20,14 @@ final public class hlvmTests: XCTestCase {
         """
     }
     
-    func testFunc() throws {
-        XCTAssertEqual("TEST", "TEST")
-    }
-    
-    func testPrint() throws {
-        XCTAssertEqual("TEST", "TEST")
+    func isEqual(swiftSource: String, kotlinSource: String) throws {
+        XCTAssertEqual(
+            transpile(input(source: swiftSource),
+                      to: Language.kotlin)
+                .trimmingCharacters(in: .whitespaces),
+            kotlinSource
+                .trimmingCharacters(in: .whitespaces)
+        )
     }
 }
 
@@ -36,37 +38,54 @@ extension hlvmTests {
         let swiftSource = """
         let maximumNumberOfLoginAttempts = 10
         var currentLoginAttempt = 0
-        """.trimmingCharacters(in: .whitespaces)
+        """
 
         let kotlinSource = """
         val maximumNumberOfLoginAttempts = 10
         var currentLoginAttempt = 0
-        """.trimmingCharacters(in: .whitespaces)
-
-        let source = input(source: swiftSource)
-        let res = transpile(source, to:Language.kotlin)
-
-        print("res : \(res)")
-        print("kotlinSource : \(kotlinSource)")
-
-        XCTAssertEqual(res, kotlinSource)
+        """
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
     }
     
-//    - Type Annotations [❌]
+//    - Type Annotations [✅]
     func testTypeAnnotation() throws {
-        // var red, green, blue: Double
-        print("hey!")
-        XCTAssertEqual("TEST", "TEST")
+        let swiftSource = """
+        var red, green, blue: Double
+        """
+
+        let kotlinSource = """
+        var red, green, blue: Double
+        """
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
     }
+    
 //    - Naming Constants and Variables [✅]
     
 //    - Printing Constants and Variables [❌]
-//    func testConstantAndVariable() throws {
-//        // print(friendlyWelcome)
-//        // print("The current value of friendlyWelcome is \(friendlyWelcome)")
-//
-//        XCTAssertEqual("TEST", "TEST")
-//    }
+    func testPrint() throws {
+        let swiftSource = """
+        print(friendlyWelcome)
+        print("The current value of friendlyWelcome is \\(friendlyWelcome)")
+        """
+
+        let kotlinSource = """
+        print(friendlyWelcome)
+        print("The current value of friendlyWelcome is ${friendlyWelcome}")
+        """
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
 }
 
 // Kotlin
