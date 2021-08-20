@@ -21,13 +21,32 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
         print("TernaryExprSyntax : \(node)")
+//        let a = true
+//        let b = 1000
+//        let c = 0
+//
+//        let d = a ? b : c
+//        print("d is \\(d)")
+  
+        // =>
+        
+        //let a = true
+        //let b = 1000
+        //let c = 0
+        //
+        //let d = a ? b : c
+        //val d =  if (a) b else c
         
         let node = SyntaxFactory.makeTernaryExpr(
-            conditionExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("if (\(node.conditionExpression.withoutTrivia()))")
-                                                .withTrailingTrivia(.spaces(1))),
+            conditionExpression: ExprSyntax(
+                SyntaxFactory
+                    .makeVariableExpr("if (\(node.conditionExpression.withoutTrivia()))")
+                    .withTrailingTrivia(.spaces(1))
+            ),
             questionMark: SyntaxFactory.makeIdentifier(""),
             firstChoice: node.firstChoice,
-            colonMark: SyntaxFactory.makeIdentifier("else")
+            colonMark: SyntaxFactory
+                .makeIdentifier("else")
                 .withTrailingTrivia(.spaces(1)),
             secondChoice:node.secondChoice
         )
@@ -114,7 +133,10 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     public override func visit(_ node: ArrayExprSyntax) -> ExprSyntax {
         print("ArrayExprSyntax : \(node)")
         
-        let spaces = node.tokens.map { $0.text }.contains(SyntaxFactory.makeEqualToken().text) ? 1 : 0
+        let spaces = node.tokens
+            .map { $0.text }
+            .contains(SyntaxFactory.makeEqualToken().text) ? 1 : 0
+        
         let left = SyntaxFactory.makeIdentifier("Array<")
         let right = SyntaxFactory
             .makeIdentifier(">")

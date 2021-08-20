@@ -1,10 +1,77 @@
+//
+//  hlvmTests.swift
+//  hlvmTests
+//
+//  Created by Seoksoon Jang on 2021/08/19.
+//
+
 import XCTest
 import class Foundation.Bundle
+import hlvm
 
-// Python
+final public class hlvmTests: XCTestCase {
+    private let language: Language = .kotlin
+    
+    func input(source: String) -> String {
+        """
+        \(language.rawValue) {
+            \(source)
+        }
+        """
+    }
+    
+    func testFunc() throws {
+        XCTAssertEqual("TEST", "TEST")
+    }
+    
+    func testPrint() throws {
+        XCTAssertEqual("TEST", "TEST")
+    }
+}
+
+// MARK: - 1. Constants and Variables
+extension hlvmTests {
+//    - Declaring Constants and Variables [✅]
+    func testConstantAndVariable() throws {
+        let swiftSource = """
+        let maximumNumberOfLoginAttempts = 10
+        var currentLoginAttempt = 0
+        """.trimmingCharacters(in: .whitespaces)
+
+        let kotlinSource = """
+        val maximumNumberOfLoginAttempts = 10
+        var currentLoginAttempt = 0
+        """.trimmingCharacters(in: .whitespaces)
+
+        let source = input(source: swiftSource)
+        let res = transpile(source, to:Language.kotlin)
+
+        print("res : \(res)")
+        print("kotlinSource : \(kotlinSource)")
+
+        XCTAssertEqual(res, kotlinSource)
+    }
+    
+//    - Type Annotations [❌]
+    func testTypeAnnotation() throws {
+        // var red, green, blue: Double
+        print("hey!")
+        XCTAssertEqual("TEST", "TEST")
+    }
+//    - Naming Constants and Variables [✅]
+    
+//    - Printing Constants and Variables [❌]
+//    func testConstantAndVariable() throws {
+//        // print(friendlyWelcome)
+//        // print("The current value of friendlyWelcome is \(friendlyWelcome)")
+//
+//        XCTAssertEqual("TEST", "TEST")
+//    }
+}
 
 // Kotlin
 
+// func + print
 //func double(x: Int, y: Int) -> Int {
 //    return y * x
 //}
@@ -14,47 +81,38 @@ import class Foundation.Bundle
 //let result = double(x:x, y:y)
 //print("\\(x) * \\(y) : \\(result)")
 
-final class hlvmTests: XCTestCase {
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
+// array + for
 
-        // Some of the APIs that we use below are available in macOS 10.13 and above.
-        guard #available(macOS 10.13, *) else {
-            return
-        }
+//let array: [Int] = [Int](arrayLiteral: 1,2,3)
+//let array2: [String] = [String](arrayLiteral: "a", "yo")
+//let array3 = [String](arrayLiteral: "a", "yo")
+//let array4 = [1,2,3]
+//let array5: [Int] = []
+//let array6 = [String]()
+//let array7: [Int] = [1,2,3]
+//let array9: [String] = ["a", "man"]
+//
+//print("\(array)\(array2)\(array3)\(array4)\(array5)\(array6)\(array7)\(array9)")
 
-        // Mac Catalyst won't have `Process`, but it is supported for executables.
-        #if !targetEnvironment(macCatalyst)
+// val array = arrayOf(1,2,3)
 
-        let fooBinary = productsDirectory.appendingPathComponent("hlvm")
+//let array: [Int] = [Int](arrayLiteral: 1,2,3)
+//for element in array {
+//    print(element)
+//}
 
-        let process = Process()
-        process.executableURL = fooBinary
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-
-        try process.run()
-        process.waitUntilExit()
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: data, encoding: .utf8)
-
-        XCTAssertNotEqual(output, "Hello, world!\n")
-        #endif
-    }
-
-    /// Returns path to the built products directory.
-    var productsDirectory: URL {
-      #if os(macOS)
-        for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
-            return bundle.bundleURL.deletingLastPathComponent()
-        }
-        fatalError("couldn't find the products directory")
-      #else
-        return Bundle.main.bundleURL
-      #endif
-    }
-}
+//        let a = true
+//        let b = 1000
+//        let c = 0
+//
+//        let d = a ? b : c
+//        print("d is \\(d)")
+  
+        // =>
+        
+        //let a = true
+        //let b = 1000
+        //let c = 0
+        //
+        //let d = a ? b : c
+        //val d =  if (a) b else c
