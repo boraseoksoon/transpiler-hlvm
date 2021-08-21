@@ -10,12 +10,6 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-    let a = true
-    let b = 1000
-    let c = 0
-
-    let d = a ? b : c
-    print("d is \\(d)")
 }
 """
 

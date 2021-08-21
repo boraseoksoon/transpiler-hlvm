@@ -58,6 +58,8 @@ public func finalize(source: String, for language: Language) -> String {
                 .replacingOccurrences(of: "nil", with: "null")
                 .replacingOccurrences(of: "@objc", with: "")
                 .replacingOccurrences(of: "@objcMembers", with: "")
+                .replacingOccurrences(of: "AnyClass", with: "Any")
+                
         case .python:
             return source
                 .replacingOccurrences(of: "print(\"", with: "print(f\"")

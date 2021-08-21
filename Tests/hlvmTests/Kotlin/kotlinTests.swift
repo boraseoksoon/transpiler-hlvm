@@ -192,15 +192,44 @@ extension kotlinTests {
 
 // MARK: - 4. Integers
 extension kotlinTests {
-    // Integer Bounds [❌]
+    // Integer Bounds [✅]
     func testMaximumInteger() throws {
         let swiftSource = """
-        let minValue = UInt8.min  // minValue is equal to 0, and is of type UInt8
-        let maxValue = UInt8.max  // maxValue is equal to 255, and is of type UInt8
+        UInt8.min
+        UInt8.max
+        UInt16.min
+        UInt16.max
+        UInt32.min
+        UInt32.max
+        UInt64.min
+        UInt64.max
+        Int8.min
+        Int8.max
+        Int16.min
+        Int16.max
+        Int32.min
+        Int32.max
+        Int64.min
+        Int64.max
         """
 
         let kotlinSource = """
-        
+        UInt.MIN_VALUE
+        UInt.MAX_VALUE
+        UInt.MIN_VALUE
+        UInt.MAX_VALUE
+        UInt.MIN_VALUE
+        UInt.MAX_VALUE
+        UInt.MIN_VALUE
+        UInt.MAX_VALUE
+        Int.MIN_VALUE
+        Int.MAX_VALUE
+        Int.MIN_VALUE
+        Int.MAX_VALUE
+        Int.MIN_VALUE
+        Int.MAX_VALUE
+        Int.MIN_VALUE
+        Int.MAX_VALUE
         """
         
         try isEqual(

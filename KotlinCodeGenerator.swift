@@ -18,6 +18,75 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     
 //    public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
 //    }
+
+    // reference: testMaximumInteger
+    public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        print("MemberAccessExprSyntax : \(node)")
+        
+        var node = node
+        func isInt(parentTokenText: String?) -> Bool {
+            switch parentTokenText {
+                case "UInt8", "UInt16", "UInt32", "UInt64", "Int8", "Int16", "Int32", "Int64" :
+                    return true
+                default:
+                    return true
+            }
+        }
+        
+        let parentTokenText = node.parent?.firstToken?.text
+        if isInt(parentTokenText: parentTokenText) {
+            switch node.name.text {
+                case "max":
+                    node = node.withName(SyntaxFactory.makeIdentifier("MAX_VALUE"))
+                case "min":
+                    node = node.withName(SyntaxFactory.makeIdentifier("MIN_VALUE"))
+                default:
+                    break
+            }
+        }
+        
+        return super.visit(node)
+    }
+    
+    // reference: testMaximumInteger
+    public override func visit(_ node: IdentifierExprSyntax) -> ExprSyntax {
+        print("IdentifierExprSyntax : \(node)")
+
+        func transformType(identifier: TokenSyntax) -> TokenSyntax {
+            let res: TokenSyntax!
+            switch identifier.text {
+                case "UInt8":
+                    res = SyntaxFactory.makeIdentifier("UInt")
+                case "UInt16":
+                    res = SyntaxFactory.makeIdentifier("UInt")
+                case "UInt32":
+                    res = SyntaxFactory.makeIdentifier("UInt")
+                case "UInt64":
+                    res = SyntaxFactory.makeIdentifier("UInt")
+                case "Int8":
+                    res = SyntaxFactory.makeIdentifier("Int")
+                case "Int16":
+                    res = SyntaxFactory.makeIdentifier("Int")
+                case "Int32":
+                    res = SyntaxFactory.makeIdentifier("Int")
+                case "Int64":
+                    res = SyntaxFactory.makeIdentifier("Int")
+                default:
+                    res = identifier
+            }
+            
+            return res
+                .withLeadingTrivia(node.identifier.leadingTrivia)
+                .withTrailingTrivia(node.identifier.trailingTrivia)
+        }
+        
+        let node = SyntaxFactory.makeIdentifierExpr(
+            identifier: transformType(identifier: node.identifier),
+            declNameArguments: node.declNameArguments
+        )
+
+        return super.visit(node)
+    }
     
     public override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
         print("TernaryExprSyntax : \(node)")
