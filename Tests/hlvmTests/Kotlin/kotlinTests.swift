@@ -330,6 +330,9 @@ extension kotlinTests {
         let decimalDouble = 12.1875
         let exponentDouble = 1.21875e1
         let hexadecimalDouble = 0xC.3p0
+        let paddedDouble = 000123.456
+        let oneMillion = 1_000_000
+        let justOverOneMillion = 1_000_000.000_000_1
         """
 
         let kotlinSource = """
@@ -340,6 +343,12 @@ extension kotlinTests {
         val decimalDouble = 12.1875
         val exponentDouble = 1.21875e1
         val hexadecimalDouble = 12.1875
+        val paddedDouble = 000123.456
+        val oneMillion = 1_000_000
+        val justOverOneMillion = 1_000_000.000_000_1
+        val paddedDouble = 000123.456
+        val oneMillion = 1_000_000
+        val justOverOneMillion = 1_000_000.000_000_1
         """
         
         try isEqual(
@@ -353,11 +362,19 @@ extension kotlinTests {
 extension kotlinTests {
     func testNumericTypeConversion() throws {
         let swiftSource = """
+        let twoThousand: UInt16 = 2_000
+        let one: UInt8 = 1
+        UInt16(one)
+        Int32(one)
         """
 
         let kotlinSource = """
+        val twoThousand: Int = 2_000
+        val one: Int = 1
+        one.toUInt()
+        one.toInt()
         """
-        
+
         try isEqual(
             swiftSource: swiftSource,
             kotlinSource: kotlinSource

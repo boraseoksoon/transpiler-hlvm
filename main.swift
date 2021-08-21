@@ -10,8 +10,9 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-    let octalInteger = 0o21
-    let hexadecimalDouble = 0xC.3p0
+        let twoThousand: UInt16 = 2_000
+        let one: UInt8 = 1
+        UInt16(one)
 }
 """
 

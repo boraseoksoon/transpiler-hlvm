@@ -29,6 +29,34 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //
 //        return super.visit(node)
 //    }
+    
+    public override func visit(_ node: SimpleTypeIdentifierSyntax) -> TypeSyntax {
+        print("SimpleTypeIdentifierSyntax : \(node)")
+        var node = node
+        if  node.name.text == "UInt8" ||
+            node.name.text == "UInt16" ||
+            node.name.text == "UInt32" ||
+            node.name.text == "UInt64"
+        {
+            // TODO: UInt -> Int Workaround
+            node = node.withName(SyntaxFactory.makeIdentifier("Int"))
+                .withLeadingTrivia(node.leadingTrivia ?? .spaces(0))
+                .withTrailingTrivia(node.trailingTrivia ?? .spaces(0))
+            
+        } else if node.name.text == "Int8" ||
+            node.name.text == "Int16" ||
+            node.name.text == "Int32" ||
+            node.name.text == "Int64"
+        {
+            node = node.withName(SyntaxFactory.makeIdentifier("Int"))
+                .withLeadingTrivia(node.leadingTrivia ?? .spaces(0))
+                .withTrailingTrivia(node.trailingTrivia ?? .spaces(0))
+        }
+        
+        
+        
+        return super.visit(node)
+    }
 
     public override func visit(_ node: FloatLiteralExprSyntax) -> ExprSyntax {
         print("FloatLiteralExprSyntax node.digits : \(node.floatingDigits)")
@@ -329,29 +357,31 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         print("FunctionCallExprSyntax : \(node)")
         
-        guard !(node.previousToken?.firstToken?.text.contains("fun") ?? true) else {
+        guard !(node.previousToken?.firstToken?.text.contains("fun") ?? false) else {
             return super.visit(node)
         }
         
-        var node = node
+        var mutNode = node
         
-        let isPrint = node.calledExpression.description.contains("print")
+        let isPrint = mutNode.calledExpression.description.contains("print")
         
-        let syntaxString = node.tokens
+        let syntaxString = mutNode.tokens
             .map ({ $0.text })
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
-        let calledExpressionTokenJoined = node.calledExpression.tokens
+        let calledExpressionTokenJoined = mutNode.calledExpression.tokens
             .map { $0.text }
             .joined()
+        
+        print("calledExpressionTokenJoined!! : \(calledExpressionTokenJoined)")
 
         if syntaxString.contains("(arrayLiteral:") {
-            print("(arrayLiteral: replace!: \(node.argumentList)")
+            print("(arrayLiteral: replace!: \(mutNode.argumentList)")
             let left = SyntaxFactory.makeIdentifier("arrayOf(")
             let right = SyntaxFactory.makeIdentifier(")")
 
-            let argumentList = node.argumentList
+            let argumentList = mutNode.argumentList
                 .map {
                     $0
                     .withExpression($0.expression)
@@ -361,19 +391,19 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             
             let list = SyntaxFactory.makeTupleExprElementList(argumentList)
             
-            node = SyntaxFactory.makeFunctionCallExpr(
+            mutNode = SyntaxFactory.makeFunctionCallExpr(
                 calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
                 leftParen: left,
                 argumentList: list,
                 rightParen: right,
-                trailingClosure: node.trailingClosure,
-                additionalTrailingClosures: node.additionalTrailingClosures
+                trailingClosure: mutNode.trailingClosure,
+                additionalTrailingClosures: mutNode.additionalTrailingClosures
             )
             
         } else if isPrint {
             let colon = isPrint ? nil : SyntaxFactory.makeIdentifier("=")
             let list = SyntaxFactory.makeTupleExprElementList(
-                node.argumentList.map {
+                mutNode.argumentList.map {
                     SyntaxFactory.makeTupleExprElement(
                         label: $0.label,
                         colon: colon,
@@ -383,13 +413,13 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 }
             )
             
-            node = SyntaxFactory.makeFunctionCallExpr(
-                calledExpression: node.calledExpression,
-                leftParen: node.leftParen,
+            mutNode = SyntaxFactory.makeFunctionCallExpr(
+                calledExpression: mutNode.calledExpression,
+                leftParen: mutNode.leftParen,
                 argumentList: list,
-                rightParen: node.rightParen,
-                trailingClosure: node.trailingClosure,
-                additionalTrailingClosures: node.additionalTrailingClosures
+                rightParen: mutNode.rightParen,
+                trailingClosure: mutNode.trailingClosure,
+                additionalTrailingClosures: mutNode.additionalTrailingClosures
             )
         } else {
             let isArray = calledExpressionTokenJoined.hasPrefix("[") && calledExpressionTokenJoined.hasSuffix("]")
@@ -413,18 +443,52 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 let left = SyntaxFactory.makeIdentifier("emptyArray<\(type)")
                 let right = SyntaxFactory.makeIdentifier(">()")
 
-                node = SyntaxFactory.makeFunctionCallExpr(
+                mutNode = SyntaxFactory.makeFunctionCallExpr(
                     calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
                     leftParen: left,
-                    argumentList: node.argumentList,
+                    argumentList: mutNode.argumentList,
                     rightParen: right,
-                    trailingClosure: node.trailingClosure,
-                    additionalTrailingClosures: node.additionalTrailingClosures
+                    trailingClosure: mutNode.trailingClosure,
+                    additionalTrailingClosures: mutNode.additionalTrailingClosures
+                )
+            }
+            
+            if
+                calledExpressionTokenJoined.contains("UInt8") ||
+                calledExpressionTokenJoined.contains("UInt16") ||
+                calledExpressionTokenJoined.contains("UInt32") ||
+                calledExpressionTokenJoined.contains("UInt64")
+            {
+                mutNode = SyntaxFactory.makeFunctionCallExpr(
+                    calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                    leftParen: nil,
+                    argumentList: mutNode.argumentList,
+                    rightParen: SyntaxFactory.makeIdentifier(".toUInt()"),
+                    trailingClosure: mutNode.trailingClosure,
+                    additionalTrailingClosures: mutNode.additionalTrailingClosures
+                )
+            } else if
+                    calledExpressionTokenJoined.contains("Int8") ||
+                    calledExpressionTokenJoined.contains("Int16") ||
+                    calledExpressionTokenJoined.contains("Int32") ||
+                    calledExpressionTokenJoined.contains("Int64")
+            {
+                mutNode = SyntaxFactory.makeFunctionCallExpr(
+                    calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                    leftParen: nil,
+                    argumentList: mutNode.argumentList,
+                    rightParen: SyntaxFactory.makeIdentifier(".toInt()"),
+                    trailingClosure: mutNode.trailingClosure,
+                    additionalTrailingClosures: mutNode.additionalTrailingClosures
                 )
             }
         }
 
-        return super.visit(node)
+        return super.visit(
+            mutNode
+                .withLeadingTrivia(node.leadingTrivia ?? .spaces(0))
+                .withTrailingTrivia(node.trailingTrivia ?? .spaces(0))
+        )
     }
     
 }
