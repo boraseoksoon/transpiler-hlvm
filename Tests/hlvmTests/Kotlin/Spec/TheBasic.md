@@ -35,7 +35,7 @@
 8. Numeric Type Conversion [✅]
 9. Integer and Floating-Point Conversion [✅]
 
-10. Type Aliases [❌]
+10. Type Aliases [✅]
 11. Booleans [❌]
 12. Optionals [❌]
 13. nil [❌]

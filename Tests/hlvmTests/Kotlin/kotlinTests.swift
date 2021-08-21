@@ -412,13 +412,15 @@ extension kotlinTests {
     }
 }
 
-// MARK: - 10. Type Aliases [❌]
+// MARK: - 10. Type Aliases [✅]
 extension kotlinTests {
     func testTypeAlias() throws {
         let swiftSource = """
+        typealias AudioSample = UInt16
         """
 
         let kotlinSource = """
+        typealias AudioSample = Int
         """
 
         try isEqual(
