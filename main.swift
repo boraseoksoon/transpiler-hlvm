@@ -10,6 +10,8 @@ import SwiftSyntax
 
 let source = """
 kotlin {
+    let octalInteger = 0o21
+    let hexadecimalDouble = 0xC.3p0
 }
 """
 
@@ -24,3 +26,5 @@ print("")
 print(code)
 
 print("")
+
+print("take : \(Int(0o21))")

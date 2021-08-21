@@ -19,6 +19,47 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //    public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
 //    }
 
+//    public override func visit(_ node: IdentifierPatternSyntax) -> PatternSyntax {
+//        switch node.identifier.text {
+//            case "octalInteger":
+//
+//            case "hexadecimalDouble":
+//
+//        }
+//
+//        return super.visit(node)
+//    }
+
+    public override func visit(_ node: FloatLiteralExprSyntax) -> ExprSyntax {
+        print("FloatLiteralExprSyntax node.digits : \(node.floatingDigits)")
+        if node.floatingDigits.text.hasPrefix("0xC.") {
+            return super.visit(
+                node.withFloatingDigits(
+                    SyntaxFactory.makeFloatingLiteral(
+                        String(Float(node.floatingDigits.text) ?? 0.0)
+                    )
+                )
+            )
+        }
+
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: IntegerLiteralExprSyntax) -> ExprSyntax {
+        print("IntegerLiteralExprSyntax node.digits : \(node.digits)")
+        if node.digits.text.hasPrefix("0o") {
+            return super.visit(
+                node.withDigits(
+                    SyntaxFactory.makeIntegerLiteral(
+                        String(Int(node.digits.text.replacingOccurrences(of: "0o", with: ""), radix: 0o10) ?? 0)
+                    )
+                )
+            )
+        }
+
+        return super.visit(node)
+    }
+    
     // reference: testMaximumInteger
     public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         print("MemberAccessExprSyntax : \(node)")

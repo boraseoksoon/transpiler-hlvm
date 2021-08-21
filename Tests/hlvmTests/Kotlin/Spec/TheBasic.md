@@ -10,27 +10,27 @@
 2. Comments
     - Single-line comments [✅]
     - Multiline comments [✅]
-    - Nested multiline comments [✅]
+    - Nested multiline comments [❌]
 
 3. Semicolons
     - Optional semicolons [❌]
     
 4. Integers
-    - Integer Bounds [❌]
-    - Int [❌]
-    - UInt [❌]
+    - Integer Bounds [✅]
+    - Int [🌟]
+    - UInt [🌟]
     
 5. Floating-Point Numbers 
-    - Double [❌]
-    - Float [❌]
+    - Double [🌟]
+    - Float [🌟]
     
-6. Type Safety and Type Inference [❌]
+6. Type Safety and Type Inference [✅]
 
 7. Numeric Literals
-    - A decimal number, with no prefix [❌]
-    - A binary number, with a 0b prefix [❌] 
-    - An octal number, with a 0o prefix [❌]
-    - A hexadecimal number, with a 0x prefix [❌]
+    - A decimal number, with no prefix [✅]
+    - A binary number, with a 0b prefix [✅] 
+    - An octal number, with a 0o prefix [✅]
+    - A hexadecimal number, with a 0x prefix [✅]
     
 8. Numeric Type Conversion [❌]
 9. Integer and Floating-Point Conversion [❌]
