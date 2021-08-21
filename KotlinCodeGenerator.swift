@@ -457,7 +457,8 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 calledExpressionTokenJoined.contains("UInt8") ||
                 calledExpressionTokenJoined.contains("UInt16") ||
                 calledExpressionTokenJoined.contains("UInt32") ||
-                calledExpressionTokenJoined.contains("UInt64")
+                calledExpressionTokenJoined.contains("UInt64") ||
+                calledExpressionTokenJoined.contains("UInt")
             {
                 mutNode = SyntaxFactory.makeFunctionCallExpr(
                     calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
@@ -471,13 +472,23 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                     calledExpressionTokenJoined.contains("Int8") ||
                     calledExpressionTokenJoined.contains("Int16") ||
                     calledExpressionTokenJoined.contains("Int32") ||
-                    calledExpressionTokenJoined.contains("Int64")
+                    calledExpressionTokenJoined.contains("Int64") ||
+                    calledExpressionTokenJoined.contains("Int")
             {
                 mutNode = SyntaxFactory.makeFunctionCallExpr(
                     calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
                     leftParen: nil,
                     argumentList: mutNode.argumentList,
                     rightParen: SyntaxFactory.makeIdentifier(".toInt()"),
+                    trailingClosure: mutNode.trailingClosure,
+                    additionalTrailingClosures: mutNode.additionalTrailingClosures
+                )
+            } else if calledExpressionTokenJoined.contains("Double") {
+                mutNode = SyntaxFactory.makeFunctionCallExpr(
+                    calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
+                    leftParen: nil,
+                    argumentList: mutNode.argumentList,
+                    rightParen: SyntaxFactory.makeIdentifier(".toDouble()"),
                     trailingClosure: mutNode.trailingClosure,
                     additionalTrailingClosures: mutNode.additionalTrailingClosures
                 )

@@ -358,7 +358,7 @@ extension kotlinTests {
     }
 }
 
-// MARK: - 8. Numeric Type Conversion
+// MARK: - 8. Numeric Type Conversion [✅]
 extension kotlinTests {
     func testNumericTypeConversion() throws {
         let swiftSource = """
@@ -373,6 +373,52 @@ extension kotlinTests {
         val one: Int = 1
         one.toUInt()
         one.toInt()
+        """
+
+        // TODO :let twoThousandAndOne = twoThousand + UInt16(one)
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+
+}
+
+// MARK: - 9. Integer and Floating-Point Conversion [✅]
+extension kotlinTests {
+    func testFloatingConversion() throws {
+        let swiftSource = """
+        let three = 3
+        let pointOneFourOneFiveNine = 0.14159
+        let pi = Double(three) + pointOneFourOneFiveNine
+        let integerPi = Int(pi)
+        """
+
+        let kotlinSource = """
+        val three = 3
+        val pointOneFourOneFiveNine = 0.14159
+        val pi = three.toDouble() + pointOneFourOneFiveNine
+        val integerPi = pi.toInt()
+        """
+        
+        // TODO:
+        // let pi = Double(three) + pointOneFourOneFiveNine
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 10. Type Aliases [❌]
+extension kotlinTests {
+    func testTypeAlias() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
         """
 
         try isEqual(

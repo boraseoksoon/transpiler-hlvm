@@ -32,8 +32,8 @@
     - An octal number, with a 0o prefix [✅]
     - A hexadecimal number, with a 0x prefix [✅]
     
-8. Numeric Type Conversion [❌]
-9. Integer and Floating-Point Conversion [❌]
+8. Numeric Type Conversion [✅]
+9. Integer and Floating-Point Conversion [✅]
 
 10. Type Aliases [❌]
 11. Booleans [❌]
