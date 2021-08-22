@@ -15,9 +15,6 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         // print("TokenSyntax : \(token)")
         return super.visit(token)
     }
-    
-//    public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
-//    }
 
 //    public override func visit(_ node: IdentifierPatternSyntax) -> PatternSyntax {
 //        switch node.identifier.text {
@@ -29,6 +26,42 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //
 //        return super.visit(node)
 //    }
+    
+    public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
+        let left = SyntaxFactory.makeConditionElement(condition: Syntax(SyntaxFactory.makeIdentifier("(")),
+                                                      trailingComma: nil)
+        
+        let right = SyntaxFactory.makeConditionElement(condition: Syntax(SyntaxFactory.makeIdentifier(")").withTrailingTrivia(.spaces(1))),
+                                                       trailingComma: nil)
+
+        let conditions = node.conditions.map {
+            SyntaxFactory.makeConditionElement(
+                condition: Syntax(SyntaxFactory.makeIdentifier($0.condition.description.trimmingCharacters(in: .whitespacesAndNewlines))),
+                trailingComma: $0.description.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix(",")
+                    ? SyntaxFactory.makeIdentifier(" && ") : $0.trailingComma)
+        }
+
+        let node = SyntaxFactory.makeIfStmt(
+            labelName: node.labelName,
+            labelColon: node.labelColon,
+            ifKeyword: node.ifKeyword,
+            conditions: SyntaxFactory.makeConditionElementList(conditions).prepending(left).appending(right),
+            body: node.body,
+            elseKeyword: node.elseKeyword,
+            elseBody: node.elseBody
+        )
+        
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: ConditionElementListSyntax) -> Syntax {
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: ConditionElementSyntax) -> Syntax {
+        // print("ConditionElementSyntax : \(node)")
+        return super.visit(node)
+    }
     
     public override func visit(_ node: SimpleTypeIdentifierSyntax) -> TypeSyntax {
         print("SimpleTypeIdentifierSyntax : \(node)")

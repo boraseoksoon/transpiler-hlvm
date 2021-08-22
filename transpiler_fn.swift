@@ -15,7 +15,8 @@ public func transpile(_ source: String, to language: Language? = nil) -> String 
         else { return source }
 
     let preprocessedSource = preprocess(source: source, for: language)
-    let (_, indentedSource) = indent(source: preprocessedSource)
+    // TODO: due to indent type, it may be possible for isEqual code test to fail.
+    let (_, indentedSource) = indent(source: preprocessedSource, indentType: .space4)
     let AST = try! SyntaxParser.parse(source: indentedSource)
     let generatedCode = generateCode(from: AST, for: language)
     
@@ -23,8 +24,10 @@ public func transpile(_ source: String, to language: Language? = nil) -> String 
 }
 
 public func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {
-    finalize(source: CodeGenerator(from: AST, for: language).generate(),
-             for: language)
+    finalize(
+        source: CodeGenerator(from: AST, for: language).generate(),
+        for: language
+    )
 }
 
 public func validCheck(source: String, for language: Language) -> Bool {
@@ -32,7 +35,7 @@ public func validCheck(source: String, for language: Language) -> Bool {
 }
 
 public func preprocess(source: String, for language: Language) -> String {
-    // WARN: Parser does not work properly if replaced ahead of time
+    // WARN: Code generation based on AST will not work properly if syntax is replaced ahead of time
     switch language {
         case .kotlin:
         return source

@@ -49,8 +49,8 @@ func indent(source: String,
             else { return lines }
 
         func calculate(newIndentLevel: Int,
-                                  indentType: IndentationType,
-                                  newLine: String) -> String {
+                       indentType: IndentationType,
+                       newLine: String) -> String {
             String(repeating:indentType.rawValue,
                    count: newIndentLevel >= 0 ? newIndentLevel : 0) + newLine
         }
@@ -158,9 +158,12 @@ func indent(source: String,
                 .joined(separator: "\n"))
     }
 
-    guard hasPairBracket(string: source) else {
-        return (.unknown, source)
-    }
+    // TODO: if hasPairBracket failed, We need to report this fact to users
+    // rather than just trying and returning a given incomplete source
+    
+//    guard hasPairBracket(string: source) else {
+//        return (.unknown, source)
+//    }
     
     let lines = takeCode(from: source)
         .components(separatedBy: "\n")

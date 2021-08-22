@@ -21,13 +21,13 @@ final public class kotlinTests: XCTestCase {
     }
     
     func isEqual(swiftSource: String, kotlinSource: String) throws {
-        XCTAssertEqual(
-            transpile(input(source: swiftSource),
-                      to: Language.kotlin)
-                .trimmingCharacters(in: .whitespaces),
-            kotlinSource
-                .trimmingCharacters(in: .whitespaces)
-        )
+        let code1 = transpile(input(source: swiftSource), to: Language.kotlin).trimmingCharacters(in: .whitespacesAndNewlines)
+        let code2 = kotlinSource.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        print(code1)
+        print("**** divider *****")
+        print(code2)
+        XCTAssertEqual(code1, code2)
     }
 }
 
@@ -421,6 +421,46 @@ extension kotlinTests {
 
         let kotlinSource = """
         typealias AudioSample = Int
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 11. Boolean [✅]
+extension kotlinTests {
+    func testBoolean() throws {
+        let swiftSource = """
+        let orangesAreOrange = true
+        let turnipsAreDelicious = false
+        if turnipsAreDelicious {
+            print("Mmm, tasty turnips!")
+        } else {
+            print("Eww, turnips are horrible.")
+        }
+        // Prints "Eww, turnips are horrible."
+        let i = 1
+        if i == 1 {
+            // this example will compile successfully
+        }
+        """
+
+        let kotlinSource = """
+        val orangesAreOrange = true
+        val turnipsAreDelicious = false
+        if (turnipsAreDelicious) {
+            print("Mmm, tasty turnips!")
+        } else {
+            print("Eww, turnips are horrible.")
+        }
+        // Prints "Eww, turnips are horrible."
+        val i = 1
+        if (i == 1) {
+            // this example will compile successfully
+        }
         """
 
         try isEqual(
