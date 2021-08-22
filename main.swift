@@ -10,34 +10,31 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-    if turnipsAreDelicious {
-    switch a {
-                    good {
-fire{
-            }
-        }
+let http404Error = (404, "Not Found")
+let (statusCode, statusMessage) = http404Error
+print("The status code is \\(statusCode)")
+// Prints "The status code is 404"
+print("The status message is \\(statusMessage)")
+// Prints "The status message is Not Found"
+
+let (justTheStatusCode, _) = http404Error
+print("The status code is \\(justTheStatusCode)")
+// Prints "The status code is 404"
+
+print("The status code is \\(http404Error.0)")
+// Prints "The status code is 404"
+print("The status message is \\(http404Error.1)")
+// Prints "The status message is Not Found"
+
+let http200Status = (statusCode: 200, description: "OK")
+print("The status code is \\(http200Status.statusCode)")
+// Prints "The status code is 200"
+print("The status message is \\(http200Status.description)")
+// Prints "The status message is OK"
 }
 """
+// val http200Status = mapOf("statusCode" to 200, "description" to "OK")
 
-let isNice = true
-let isTrue = true
-let isGood = false
-if isNice  , isTrue     , isGood {
-    print("pass!")
-}
-
-//let orangesAreOrange = true
-//let turnipsAreDelicious = false
-//if turnipsAreDelicious {
-//    print("Mmm, tasty turnips!")
-//} else {
-//    print("Eww, turnips are horrible.")
-//}
-//// Prints "Eww, turnips are horrible."
-//let i = 1
-//if i == 1 {
-//    // this example will compile successfully
-//}
 
 
 let code = transpile(source)

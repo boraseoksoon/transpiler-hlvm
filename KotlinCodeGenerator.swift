@@ -10,7 +10,10 @@ import SwiftSyntax
 
 final class KotlinCodeGenerator: SyntaxRewriter {
     private let language: Language = .kotlin
-
+    
+    private typealias IdentifierName = String
+    private var runtimeTypeTable: [String : RuntimeType] = [:]
+    
     public override func visit(_ token: TokenSyntax) -> Syntax {
         // print("TokenSyntax : \(token)")
         return super.visit(token)
@@ -26,8 +29,63 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //
 //        return super.visit(node)
 //    }
+    public override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
+        print("TupleExprSyntax : \(node)")
+        if node.elementList.tokens.map({ $0.text }).joined().contains(":") {
+        
+            if (
+                recurScan(node: node.previousToken, forKeyword: "=", isBackward: true) &&
+                (
+                    recurScan(node: node.previousToken, forKeyword: "var", isBackward: true) ||
+                    recurScan(node: node.previousToken, forKeyword: "let", isBackward: true)
+                )
+            ) {
+                //TODO: real
+                runtimeTypeTable["http200Status"] = .dictionary
+            }
+            
+            
+            /// Example:
+            /// let http200Status = (statusCode: 200, description: "OK")
+            /// =>
+            /// val http200Status = mapOf("statusCode" to 200, "description" to "OK")
+            func transformTupleToKotlinMap(node: TupleExprSyntax) -> TupleExprSyntax {
+                SyntaxFactory.makeTupleExpr(
+                    leftParen: SyntaxFactory.makeIdentifier("mapOf("),
+                    elementList: SyntaxFactory.makeTupleExprElementList(
+                        node.elementList.map {
+                            SyntaxFactory.makeTupleExprElement(
+                                label: SyntaxFactory.makeIdentifier("\"\($0.label?.text ?? "")\""),
+                                colon: SyntaxFactory.makeIdentifier(" to "),
+                                expression: $0.expression,
+                                trailingComma: $0.trailingComma
+                            )
+                        }
+                    ),
+                    rightParen: SyntaxFactory.makeIdentifier(")")
+                )
+            }
+
+            return super.visit(transformTupleToKotlinMap(node: node))
+        } else {
+            /// Example:
+            /// let http404Error = (404, "Not Found")
+            /// =>
+            /// val http404Error = arrayOf(404, "Not Found")
+            func transformTupleToKotlinArray(node: TupleExprSyntax) -> TupleExprSyntax {
+                SyntaxFactory.makeTupleExpr(
+                    leftParen: SyntaxFactory.makeIdentifier("arrayOf("),
+                    elementList: node.elementList,
+                    rightParen: SyntaxFactory.makeIdentifier(")")
+                )
+            }
+
+            return super.visit(transformTupleToKotlinArray(node: node))
+        }
+    }
     
     public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
+        // implemented: testBoolean
         let left = SyntaxFactory.makeConditionElement(condition: Syntax(SyntaxFactory.makeIdentifier("(")),
                                                       trailingComma: nil)
         
@@ -121,33 +179,59 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         return super.visit(node)
     }
     
+    enum RuntimeType {
+        case dictionary
+        case unknown
+    }
+    
+    func typeOf(_ identifierName: String) -> RuntimeType {
+        runtimeTypeTable[identifierName] ?? .unknown
+    }
+    
     // reference: testMaximumInteger
     public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         print("MemberAccessExprSyntax : \(node)")
+        print("node.name : \(node.name)")
+        print("node.dot : \(node.dot)")
+        print("node.base?.description : \(node.base?.description)")
         
-        var node = node
-        func isInt(parentTokenText: String?) -> Bool {
-            switch parentTokenText {
-                case "UInt8", "UInt16", "UInt32", "UInt64", "Int8", "Int16", "Int32", "Int64" :
-                    return true
-                default:
-                    return true
-            }
+        var mutNode = node
+        
+        switch typeOf(node.base?.description ?? "") {
+            case .dictionary:
+                // TODO: real, just done for test now
+                mutNode = node
+                    .withDot(nil)
+                    .withName(SyntaxFactory.makeIdentifier("[\"\(node.name)\"]"))
+            case .unknown:
+                if let tupleIndex = Int(node.name.text) {
+                    mutNode = node
+                        .withDot(nil)
+                        .withName(SyntaxFactory.makeIdentifier("[\(tupleIndex)]"))
+                } else {
+                    func isInt(parentTokenText: String?) -> Bool {
+                        switch parentTokenText {
+                            case "UInt8", "UInt16", "UInt32", "UInt64", "Int8", "Int16", "Int32", "Int64" :
+                                return true
+                            default:
+                                return true
+                        }
+                    }
+                    
+                    let parentTokenText = node.parent?.firstToken?.text
+                    if isInt(parentTokenText: parentTokenText) {
+                        switch node.name.text {
+                            case "max":
+                                mutNode = node.withName(SyntaxFactory.makeIdentifier("MAX_VALUE"))
+                            case "min":
+                                mutNode = node.withName(SyntaxFactory.makeIdentifier("MIN_VALUE"))
+                            default:
+                                break
+                        }
+                    }
+                }
         }
-        
-        let parentTokenText = node.parent?.firstToken?.text
-        if isInt(parentTokenText: parentTokenText) {
-            switch node.name.text {
-                case "max":
-                    node = node.withName(SyntaxFactory.makeIdentifier("MAX_VALUE"))
-                case "min":
-                    node = node.withName(SyntaxFactory.makeIdentifier("MIN_VALUE"))
-                default:
-                    break
-            }
-        }
-        
-        return super.visit(node)
+        return super.visit(mutNode)
     }
     
     // reference: testMaximumInteger
@@ -253,7 +337,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     public override func visit(_ node: InitializerClauseSyntax) -> Syntax {
         print("InitializerClauseSyntax : \(node)")        
         var node = node
-        
+
         let valueTokens = node.value.tokens
             .map { $0.text }
             .joined()
@@ -273,21 +357,10 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     }
         
     public override func visit(_ node: PatternBindingSyntax) -> Syntax {
-        print("PatternBindingSyntax : \(node)")
         return super.visit(node)
     }
         
     public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        print("VariableDeclSyntax node : \(node)")
-        print("node.bindings : \(node.bindings)")
-
-//        let node = SyntaxFactory.makeVariableDecl(
-//            attributes: node.attributes,
-//            modifiers: node.modifiers,
-//            letOrVarKeyword: node.letOrVarKeyword,
-//            bindings: node.bindings
-//        )
-        
         return super.visit(node)
     }
     
@@ -535,4 +608,15 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         )
     }
     
+}
+
+func recurScan(
+    node: TokenSyntax?,
+    forKeyword keyword: String,
+    isBackward: Bool
+) -> Bool {
+    node?.text ?? "" == keyword ?
+        true : (node == nil ? false : recurScan(node:isBackward ? node?.previousToken : node?.nextToken,
+                                                forKeyword:keyword,
+                                                isBackward: isBackward))
 }

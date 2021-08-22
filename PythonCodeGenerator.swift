@@ -37,7 +37,13 @@ final class PythonCodeGenerator: SyntaxRewriter {
         
         var tempTokens = [[String]]()
         node.conditions.forEach {
-            let newTokens = ($0.tokens.compactMap { $0.text }.count == 1 ? ["not"] + $0.tokens.compactMap { $0.text } : $0.tokens.compactMap { $0.text })
+            let newTokens = (
+                $0.tokens.compactMap { $0.text }.count == 1
+                ?
+                ["not"] + $0.tokens.compactMap { $0.text }
+                :
+                $0.tokens.compactMap { $0.text }
+            )
             tempTokens.append(newTokens)
         }
         let tokens = tempTokens.flatMap { $0 }
@@ -81,8 +87,10 @@ final class PythonCodeGenerator: SyntaxRewriter {
                 
                 let (token, spaces) = makeTokenTuple($0)
 
-                return SyntaxFactory.makeConditionElement(condition: Syntax(SyntaxFactory.makeIdentifier(token).withTrailingTrivia(.spaces(spaces))),
-                                                          trailingComma: nil)
+                return SyntaxFactory.makeConditionElement(
+                    condition: Syntax(SyntaxFactory.makeIdentifier(token).withTrailingTrivia(.spaces(spaces))),
+                    trailingComma: nil
+                )
             }
         )
         
@@ -531,61 +539,6 @@ final class PythonCodeGenerator: SyntaxRewriter {
                                                       additionalTrailingClosures: nil)
             return super.visit(node)
 
-//            node.argumentList.tokens.forEach {
-//                print("node.argumentList : \($0)")
-//            }
-            
-//            let expression = NSExpression(format: node.argumentList.tokens.map { $0.text }.joined() )
-//            (expression.expressionValue(with: nil, context: nil) as! [Any]).forEach {
-//                print("got you? : \($0)")
-//            }
-
-//            let expression = node.argumentList.tokens.map { $0.text }.joined()
-//            print("expression : \(expression)")
-            
-            
-            
-            
-            
-            // var set3 = Set<String>(["0", "1"])
-            
-//            let argumentList = [SyntaxFactory.makeTupleExprElement(label: nil, colon: nil, expression: ExprSyntax(SyntaxFactory.makeVariableExpr("fuck")), trailingComma: nil)]
-            
-//            let argumentList2 = SyntaxFactory.makeTupleExprElementList([
-//                SyntaxFactory.makeTupleExprElement(
-//                    label: nil,
-//                    colon: nil,
-//                    expression: node.calledExpression,
-//                    trailingComma: nil
-//                )
-//            ])
-            
-//            var iter = node.argumentList.makeIterator()
-//            while iter.next() != nil {
-//                print("iter : ", iter)
-//            }
-            
-//            node.argumentList = node.argumentList.
-//            node.argumentList = node.argumentList.removing(childAt: 0)
-//
-            //            let expression = ExprSyntax(SyntaxFactory.makeVariableExpr("hey"))
-            //            let arrays = (0...10)
-            //            let elements = arrays.enumerated().map { index, _ in
-            //                SyntaxFactory.makeTupleExprElement(
-            //                    label: nil,
-            //                    colon: nil,
-            //                    expression: expression,
-            //                    trailingComma: index == arrays.count - 1 ? nil : SyntaxFactory.makeCommaToken()
-            //                )
-            //            }
-//
-//            let list = SyntaxFactory.makeTupleExprElementList(elements)
-            
-                //.filter { $0.firstToken?.text == "[" || $0.lastToken?.text == "]" }
-            
-//            node.argumentList
-//                .forEach { print("$0.expression : \($0.expression)") }
-            
         } else if isDict {
             node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("{}")),
                                                       leftParen: nil,

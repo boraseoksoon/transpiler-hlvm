@@ -346,9 +346,6 @@ extension kotlinTests {
         val paddedDouble = 000123.456
         val oneMillion = 1_000_000
         val justOverOneMillion = 1_000_000.000_000_1
-        val paddedDouble = 000123.456
-        val oneMillion = 1_000_000
-        val justOverOneMillion = 1_000_000.000_000_1
         """
         
         try isEqual(
@@ -446,6 +443,15 @@ extension kotlinTests {
         if i == 1 {
             // this example will compile successfully
         }
+        
+        let isGood = true
+        var isNice = true
+        
+        if isGood, isNice {
+            print("pass!")
+        } else {
+            print("can't pass!")
+        }
         """
 
         let kotlinSource = """
@@ -461,6 +467,114 @@ extension kotlinTests {
         if (i == 1) {
             // this example will compile successfully
         }
+        
+        val isGood = true
+        var isNice = true
+        
+        if (isGood && isNice) {
+            print("pass!")
+        } else {
+            print("can't pass!")
+        }
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 12. Tuples  [❌]
+extension kotlinTests {
+    func testTuples() throws {
+//        let swiftSource = """
+//        let http404Error = (404, "Not Found")
+//        """
+//
+//        let kotlinSource = """
+//        val http404Error = arrayOf(404, "Not Found")
+//        """
+//
+        let swiftSource = """
+        let http404Error = (404, "Not Found")
+        let (statusCode, statusMessage) = http404Error
+        print("The status code is \\(statusCode)")
+        // Prints "The status code is 404"
+        print("The status message is \\(statusMessage)")
+        // Prints "The status message is Not Found"
+
+        let (justTheStatusCode, _) = http404Error
+        print("The status code is \\(justTheStatusCode)")
+        // Prints "The status code is 404"
+
+        print("The status code is \\(http404Error.0)")
+        // Prints "The status code is 404"
+        print("The status message is \\(http404Error.1)")
+        // Prints "The status message is Not Found"
+
+        let http200Status = (statusCode: 200, description: "OK")
+
+        print("The status code is \\(http200Status.statusCode)")
+        // Prints "The status code is 200"
+        print("The status message is \\(http200Status.description)")
+        // Prints "The status message is OK"
+        """
+
+        let kotlinSource = """
+        val http404Error = arrayOf(404, "Not Found")
+        val (statusCode, statusMessage) = http404Error
+        print("The status code is ${statusCode}")
+        // Prints "The status code is 404"
+        print("The status message is ${statusMessage}")
+        // Prints "The status message is Not Found"
+
+        val (justTheStatusCode, _) = http404Error
+        print("The status code is ${justTheStatusCode}")
+        // Prints "The status code is 404"
+
+        print("The status code is ${http404Error[0]}")
+        // Prints "The status code is 404"
+        print("The status message is ${http404Error[1]}")
+        // Prints "The status message is Not Found"
+
+        val http200Status = mapOf("statusCode" to 200, "description" to "OK")
+
+        print("The status code is ${http200Status["statusCode"]}")
+        // Prints "The status code is 200"
+        print("The status message is ${http200Status["description"]}")
+        // Prints "The status message is OK"
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 13. Optionals [❌]
+extension kotlinTests {
+    func testOptionals() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+extension kotlinTests {
+    func testTemplate() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
         """
 
         try isEqual(

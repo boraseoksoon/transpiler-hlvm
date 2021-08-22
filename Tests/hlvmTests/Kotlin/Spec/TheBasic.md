@@ -36,14 +36,15 @@
 9. Integer and Floating-Point Conversion [✅]
 
 10. Type Aliases [✅]
-11. Booleans [❌]
-12. Optionals [❌]
-13. nil [❌]
-14. If Statements and Forced Unwrapping [❌]
-15. Optional Binding [❌]
-16. Implicitly Unwrapped Optionals [❌]
-17. Error Handling [❌]
-18. Assertions and Preconditions
+11. Booleans [✅]
+12. Tuples [❌]
+13. Optionals [❌]
+14. nil [❌]
+15. If Statements and Forced Unwrapping [❌]
+16. Optional Binding [❌]
+17. Implicitly Unwrapped Optionals [❌]
+18. Error Handling [❌]
+19. Assertions and Preconditions
     - Debugging with Assertions [❌]
     - Enforcing Preconditions [❌]
 
