@@ -10,10 +10,8 @@ import SwiftSyntax
 
 final class KotlinCodeGenerator: SyntaxRewriter {
     private let language: Language = .kotlin
-    
-    private typealias IdentifierName = String
-    private var runtimeTypeTable: [String : RuntimeType] = [:]
-    
+        
+    // MARK: - LifeCycle
     public override func visit(_ token: TokenSyntax) -> Syntax {
         // print("TokenSyntax : \(token)")
         return super.visit(token)
@@ -31,20 +29,26 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //    }
     public override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
         print("TupleExprSyntax : \(node)")
-        if node.elementList.tokens.map({ $0.text }).joined().contains(":") {
         
-            if (
-                recurScan(node: node.previousToken, forKeyword: "=", isBackward: true) &&
-                (
-                    recurScan(node: node.previousToken, forKeyword: "var", isBackward: true) ||
-                    recurScan(node: node.previousToken, forKeyword: "let", isBackward: true)
-                )
-            ) {
-                //TODO: real
-                runtimeTypeTable["http200Status"] = .dictionary
-            }
-            
-            
+        var mutNode = node
+        
+        let isInitializerClause = (
+            recurScan(node: node.previousToken, forKeyword: "=", isBackward: true) &&
+            (
+                recurScan(node: node.previousToken, forKeyword: "var", isBackward: true) ||
+                recurScan(node: node.previousToken, forKeyword: "let", isBackward: true)
+            )
+        )
+        
+//        let http200Status = (statusCode: 200, description: "OK")
+//        print("The status code is \\(http200Status.statusCode)")
+//        print("The status message is \\(http200Status.description)")
+        // =>
+//        val http200Status = mapOf("statusCode" to 200, "description" to "OK")
+//        print("The status code is ${http200Status["statusCode"]}")
+//        print("The status message is ${http200Status["description"]}")
+        let tokens = node.elementList.tokens.map({ $0.text }).joined()
+        if tokens.contains(":") && tokens.contains(",") {
             /// Example:
             /// let http200Status = (statusCode: 200, description: "OK")
             /// =>
@@ -66,7 +70,14 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 )
             }
 
-            return super.visit(transformTupleToKotlinMap(node: node))
+            if isInitializerClause {
+                if let identifierName = node.previousToken?.previousToken?.text {
+                    runtimeTypeTable[identifierName] = .dictionary
+                    mutNode = transformTupleToKotlinMap(node: node)
+                }
+            }
+            
+            return super.visit(mutNode)
         } else {
             /// Example:
             /// let http404Error = (404, "Not Found")
@@ -80,7 +91,14 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 )
             }
 
-            return super.visit(transformTupleToKotlinArray(node: node))
+            if isInitializerClause {
+                if let identifierName = node.previousToken?.previousToken?.text {
+                    runtimeTypeTable[identifierName] = .array
+                    mutNode = transformTupleToKotlinArray(node: node)
+                }
+            }
+
+            return super.visit(mutNode)
         }
     }
     
@@ -178,16 +196,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 
         return super.visit(node)
     }
-    
-    enum RuntimeType {
-        case dictionary
-        case unknown
-    }
-    
-    func typeOf(_ identifierName: String) -> RuntimeType {
-        runtimeTypeTable[identifierName] ?? .unknown
-    }
-    
+
     // reference: testMaximumInteger
     public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         print("MemberAccessExprSyntax : \(node)")
@@ -203,31 +212,33 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 mutNode = node
                     .withDot(nil)
                     .withName(SyntaxFactory.makeIdentifier("[\"\(node.name)\"]"))
-            case .unknown:
+            case .array:
                 if let tupleIndex = Int(node.name.text) {
                     mutNode = node
                         .withDot(nil)
                         .withName(SyntaxFactory.makeIdentifier("[\(tupleIndex)]"))
                 } else {
-                    func isInt(parentTokenText: String?) -> Bool {
-                        switch parentTokenText {
-                            case "UInt8", "UInt16", "UInt32", "UInt64", "Int8", "Int16", "Int32", "Int64" :
-                                return true
-                            default:
-                                return true
-                        }
+                    print("typeof array let tupleIndex = Int(node.name.text) error")
+                }
+            case .unknown:
+                func isInt(parentTokenText: String?) -> Bool {
+                    switch parentTokenText {
+                        case "UInt8", "UInt16", "UInt32", "UInt64", "Int8", "Int16", "Int32", "Int64" :
+                            return true
+                        default:
+                            return true
                     }
-                    
-                    let parentTokenText = node.parent?.firstToken?.text
-                    if isInt(parentTokenText: parentTokenText) {
-                        switch node.name.text {
-                            case "max":
-                                mutNode = node.withName(SyntaxFactory.makeIdentifier("MAX_VALUE"))
-                            case "min":
-                                mutNode = node.withName(SyntaxFactory.makeIdentifier("MIN_VALUE"))
-                            default:
-                                break
-                        }
+                }
+                
+                let parentTokenText = node.parent?.firstToken?.text
+                if isInt(parentTokenText: parentTokenText) {
+                    switch node.name.text {
+                        case "max":
+                            mutNode = node.withName(SyntaxFactory.makeIdentifier("MAX_VALUE"))
+                        case "min":
+                            mutNode = node.withName(SyntaxFactory.makeIdentifier("MIN_VALUE"))
+                        default:
+                            break
                     }
                 }
         }
@@ -338,6 +349,8 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         print("InitializerClauseSyntax : \(node)")        
         var node = node
 
+        print("InitializerClauseSyntax node.previousToken?.text : \(node.previousToken?.text)")
+        
         let valueTokens = node.value.tokens
             .map { $0.text }
             .joined()
@@ -619,4 +632,18 @@ func recurScan(
         true : (node == nil ? false : recurScan(node:isBackward ? node?.previousToken : node?.nextToken,
                                                 forKeyword:keyword,
                                                 isBackward: isBackward))
+}
+
+
+enum RuntimeType {
+    case dictionary
+    case array
+    case unknown
+}
+
+typealias IdentifierName = String
+var runtimeTypeTable: [String : RuntimeType] = [:]
+
+func typeOf(_ identifierName: String) -> RuntimeType {
+    runtimeTypeTable[identifierName] ?? .unknown
 }

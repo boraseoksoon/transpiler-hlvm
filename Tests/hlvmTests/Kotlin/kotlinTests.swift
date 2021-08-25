@@ -21,8 +21,10 @@ final public class kotlinTests: XCTestCase {
     }
     
     func isEqual(swiftSource: String, kotlinSource: String) throws {
-        let code1 = transpile(input(source: swiftSource), to: Language.kotlin).trimmingCharacters(in: .whitespacesAndNewlines)
-        let code2 = kotlinSource.trimmingCharacters(in: .whitespacesAndNewlines)
+        let code1 = transpile(input(source: swiftSource), to: Language.kotlin)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let code2 = kotlinSource
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         
         print(code1)
         print("**** divider *****")
@@ -485,66 +487,64 @@ extension kotlinTests {
     }
 }
 
-// MARK: - 12. Tuples  [❌]
+// MARK: - 12. Tuples  [✅]
 extension kotlinTests {
     func testTuples() throws {
-        let swiftSource = """
-        let http404Error = (404, "Not Found")
-        """
-
-        let kotlinSource = """
-        val http404Error = arrayOf(404, "Not Found")
-        """
-
 //        let swiftSource = """
 //        let http404Error = (404, "Not Found")
-//        let (statusCode, statusMessage) = http404Error
-//        print("The status code is \\(statusCode)")
-//        // Prints "The status code is 404"
-//        print("The status message is \\(statusMessage)")
-//        // Prints "The status message is Not Found"
-//
-//        let (justTheStatusCode, _) = http404Error
-//        print("The status code is \\(justTheStatusCode)")
-//        // Prints "The status code is 404"
-//
-//        print("The status code is \\(http404Error.0)")
-//        // Prints "The status code is 404"
-//        print("The status message is \\(http404Error.1)")
-//        // Prints "The status message is Not Found"
-//
-//        let http200Status = (statusCode: 200, description: "OK")
-//
-//        print("The status code is \\(http200Status.statusCode)")
-//        // Prints "The status code is 200"
-//        print("The status message is \\(http200Status.description)")
-//        // Prints "The status message is OK"
 //        """
 //
 //        let kotlinSource = """
 //        val http404Error = arrayOf(404, "Not Found")
-//        val (statusCode, statusMessage) = http404Error
-//        print("The status code is ${statusCode}")
-//        // Prints "The status code is 404"
-//        print("The status message is ${statusMessage}")
-//        // Prints "The status message is Not Found"
-//
-//        val (justTheStatusCode, _) = http404Error
-//        print("The status code is ${justTheStatusCode}")
-//        // Prints "The status code is 404"
-//
-//        print("The status code is ${http404Error[0]}")
-//        // Prints "The status code is 404"
-//        print("The status message is ${http404Error[1]}")
-//        // Prints "The status message is Not Found"
-//
-//        val http200Status = mapOf("statusCode" to 200, "description" to "OK")
-//
-//        print("The status code is ${http200Status["statusCode"]}")
-//        // Prints "The status code is 200"
-//        print("The status message is ${http200Status["description"]}")
-//        // Prints "The status message is OK"
 //        """
+
+        let swiftSource = """
+        let http404Error = (404, "Not Found")
+        let (statusCode, statusMessage) = http404Error
+        print("The status code is \\(statusCode)")
+        // Prints "The status code is 404"
+        print("The status message is \\(statusMessage)")
+        // Prints "The status message is Not Found"
+
+        let (justTheStatusCode, _) = http404Error
+        print("The status code is \\(justTheStatusCode)")
+        // Prints "The status code is 404"
+
+        print("The status code is \\(http404Error.0)")
+        // Prints "The status code is 404"
+        print("The status message is \\(http404Error.1)")
+        // Prints "The status message is Not Found"
+
+        let http200Status = (statusCode: 200, description: "OK")
+        print("The status code is \\(http200Status.statusCode)")
+        // Prints "The status code is 200"
+        print("The status message is \\(http200Status.description)")
+        // Prints "The status message is OK"
+        """
+
+        let kotlinSource = """
+        val http404Error = arrayOf(404, "Not Found")
+        val (statusCode, statusMessage) = http404Error
+        print("The status code is ${statusCode}")
+        // Prints "The status code is 404"
+        print("The status message is ${statusMessage}")
+        // Prints "The status message is Not Found"
+
+        val (justTheStatusCode, _) = http404Error
+        print("The status code is ${justTheStatusCode}")
+        // Prints "The status code is 404"
+
+        print("The status code is ${http404Error[0]}")
+        // Prints "The status code is 404"
+        print("The status message is ${http404Error[1]}")
+        // Prints "The status message is Not Found"
+
+        val http200Status = mapOf("statusCode" to 200, "description" to "OK")
+        print("The status code is ${http200Status["statusCode"]}")
+        // Prints "The status code is 200"
+        print("The status message is ${http200Status["description"]}")
+        // Prints "The status message is OK"
+        """
 
         try isEqual(
             swiftSource: swiftSource,
@@ -555,7 +555,39 @@ extension kotlinTests {
 
 // MARK: - 13. Optionals [❌]
 extension kotlinTests {
-    func testOptionals() throws {
+    // - nil [✅]
+    func testNil() throws {
+        let swiftSource = """
+        var serverResponseCode: Int? = 404
+        // serverResponseCode contains an actual Int value of 404
+        
+        serverResponseCode = nil
+        // serverResponseCode now contains no value
+            
+        let test: Int?
+        var surveyAnswer: String?
+        // surveyAnswer is automatically set to nil
+        """
+
+        let kotlinSource = """
+        var serverResponseCode: Int? = 404
+        // serverResponseCode contains an actual Int value of 404
+
+        serverResponseCode = null
+        // serverResponseCode now contains no value
+
+        val test: Int?
+        var surveyAnswer: String?
+        // surveyAnswer is automatically set to null
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    // - If Statements and Forced Unwrapping [❌]
+    func testIfStatementsAndForcedUnwrapping() throws {
         let swiftSource = """
         """
 
@@ -567,6 +599,35 @@ extension kotlinTests {
             kotlinSource: kotlinSource
         )
     }
+    
+    // - Optional Binding [❌]
+    func testOptionalBinding() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    
+    // - Implicitly Unwrapped Optionals [❌]
+    func testImplicitlyUnwrappedOptionals() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+
 }
 
 extension kotlinTests {
