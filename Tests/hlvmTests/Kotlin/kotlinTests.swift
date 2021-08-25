@@ -586,12 +586,34 @@ extension kotlinTests {
             kotlinSource: kotlinSource
         )
     }
-    // - If Statements and Forced Unwrapping [❌]
+    // - If Statements and Forced Unwrapping [✅]
     func testIfStatementsAndForcedUnwrapping() throws {
         let swiftSource = """
+        var convertedNumber: Int?
+
+        if convertedNumber != nil {
+            print("convertedNumber contains some integer value.")
+        }
+        // Prints "convertedNumber contains some integer value."
+
+        if convertedNumber != nil {
+            print("convertedNumber has an integer value of \\(convertedNumber!).")
+        }
+        // Prints "convertedNumber has an integer value of 123."
         """
 
         let kotlinSource = """
+        var convertedNumber: Int? = null
+
+        if (convertedNumber != null) {
+            print("convertedNumber contains some integer value.")
+        }
+        // Prints "convertedNumber contains some integer value."
+
+        if (convertedNumber != null) {
+            print("convertedNumber has an integer value of ${convertedNumber!!}.")
+        }
+        // Prints "convertedNumber has an integer value of 123."
         """
 
         try isEqual(

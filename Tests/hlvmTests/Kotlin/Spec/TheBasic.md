@@ -40,7 +40,7 @@
 12. Tuples [✅]
 13. Optionals [❌]
     - nil [✅]
-    - If Statements and Forced Unwrapping [❌]
+    - If Statements and Forced Unwrapping [✅]
     - Optional Binding [❌]
     - Implicitly Unwrapped Optionals [❌]
 14. Error Handling [❌]

@@ -27,6 +27,15 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //
 //        return super.visit(node)
 //    }
+    
+    public override func visit(_ node: ForcedValueExprSyntax) -> ExprSyntax {
+        print("ForcedValueExprSyntax : \(node)")
+        
+        let node = node.withExclamationMark(SyntaxFactory.makeIdentifier("!!"))
+        return super.visit(node)
+    }
+    
+    
     public override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
         print("TupleExprSyntax : \(node)")
         
@@ -374,7 +383,62 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     }
         
     public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        return super.visit(node)
+        print("VariableDeclSyntax : \(node)")
+        var mutNode = node
+        
+        enum PatternBindingSyntaxType {
+            case optional
+        }
+
+        func makePatternBindingSyntax(
+            node: PatternBindingSyntax,
+            type: PatternBindingSyntaxType
+        ) -> PatternBindingSyntax {
+            var expression: ExprSyntax!
+            switch type {
+                case .optional:
+                    let variable = SyntaxFactory.makeVariableExpr("null")
+                        .withLeadingTrivia(node.leadingTrivia ?? .spaces(0))
+                        .withTrailingTrivia(node.trailingTrivia ?? .spaces(0))
+                    
+                    expression = ExprSyntax(variable)
+            }
+
+            let equal = SyntaxFactory.makeEqualToken()
+                .withLeadingTrivia(.spaces(1))
+                .withTrailingTrivia(.spaces(1))
+            
+            let initalizer = SyntaxFactory.makeInitializerClause(
+                equal: equal,
+                value: expression
+            )
+            
+            return SyntaxFactory.makePatternBinding(pattern: node.pattern,
+                                                    typeAnnotation: node.typeAnnotation,
+                                                    initializer: initalizer,
+                                                    accessor: node.accessor,
+                                                    trailingComma: node.trailingComma)
+        }
+
+        
+        let isOptionalWithoutNilAssigned = (
+            !recurScan(node: node.parent?.firstToken, forKeyword: "=", isBackward: false)
+            &&
+            recurScan(node: node.parent?.firstToken, forKeyword: "?", isBackward: false)
+        )
+
+        if isOptionalWithoutNilAssigned {
+            // var convertedNumber: Int?
+            // =>
+            // val convertedNumber: Int? = null
+            
+            let bindings = node.bindings
+                .map { makePatternBindingSyntax(node:$0, type: .optional) }
+            
+            mutNode = node.withBindings(SyntaxFactory.makePatternBindingList(bindings))
+        }
+        
+        return super.visit(mutNode)
     }
     
     public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
