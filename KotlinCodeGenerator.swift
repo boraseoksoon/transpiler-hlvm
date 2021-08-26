@@ -544,13 +544,19 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         print("FunctionCallExprSyntax : \(node)")
         
-        guard !(node.previousToken?.firstToken?.text.contains("fun") ?? false) else {
-            return super.visit(node)
-        }
+//        print("functionName!! : \(functionName)")
+//        print("node.leftParen : \(node.leftParen?.text)")
+//        print("node.argumentList : \(node.argumentList)")
+//        print("node.rightParen : \(node.rightParen?.text)")
+//        print("node.trailingClosure : \(node.trailingClosure)")
+//        print("node.additionalTrailingClosures : \(node.additionalTrailingClosures)")
         
         var mutNode = node
         
-        let isPrint = mutNode.calledExpression.description.contains("print")
+        let containsFun = (node.previousToken?.firstToken?.text.contains("fun") ?? false)
+        guard !containsFun else { return super.visit(node) }
+
+        let containsPrint = mutNode.calledExpression.description.contains("print")
         
         let syntaxString = mutNode.tokens
             .map ({ $0.text })
@@ -560,42 +566,16 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         let functionName = mutNode.calledExpression.tokens
             .map { $0.text }
             .joined()
-        
-//        print("functionName!! : \(functionName)")
-//        print("node.leftParen : \(node.leftParen?.text)")
-//        print("node.argumentList : \(node.argumentList)")
-//        print("node.rightParen : \(node.rightParen?.text)")
-//        print("node.trailingClosure : \(node.trailingClosure)")
-//        print("node.additionalTrailingClosures : \(node.additionalTrailingClosures)")
 
-        if functionName == "assertionFailure" {
-            // assertionFailure("A person's age can't be less than zero.")
-            // =>
-            // assert(false) { "A person's age can't be less than zero." }
-            
-            let assertMessage = String(node.argumentList
-                                        .last?
-                                        .tokens
-                                        .compactMap { $0.text }
-                                        .joined() ?? "")
-            
+        func makeAssertTrailingClosure(message: String) -> ClosureExprSyntax {
             let codeBlock = SyntaxFactory.makeCodeBlockItem(
                 item: Syntax(
-                    SyntaxFactory.makeVariableExpr(assertMessage)
+                    SyntaxFactory.makeVariableExpr(message)
                         .withLeadingTrivia(.spaces(1))
                         .withTrailingTrivia(.spaces(1))
                 ),
                 semicolon: nil,
                 errorTokens: nil
-            )
-
-            let argumentList = SyntaxFactory.makeTupleExprElementList(
-                node.argumentList
-                    .map {
-                        $0
-                        .withExpression(ExprSyntax(SyntaxFactory.makeVariableExpr("false")))
-                        .withTrailingComma(nil)
-                    }
             )
             
             let trailingClosure = SyntaxFactory.makeClosureExpr(
@@ -605,65 +585,79 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 rightBrace: SyntaxFactory.makeRightBraceToken()
             ).withLeadingTrivia(.spaces(1))
             
-            mutNode = SyntaxFactory.makeFunctionCallExpr(
-                calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("assert")),
-                leftParen: node.leftParen,
-                argumentList: argumentList, // node.argumentList,
-                rightParen: node.rightParen,
-                trailingClosure: trailingClosure,
-                additionalTrailingClosures: node.additionalTrailingClosures
-            )
+            return trailingClosure
+        }
+        
+        if functionName == "assertionFailure" {
+            // assertionFailure("A person's age can't be less than zero.")
+            // =>
+            // assert(false) { "A person's age can't be less than zero." }
+            func makeAssertionFailure(node: FunctionCallExprSyntax, message: String) -> FunctionCallExprSyntax {
+                SyntaxFactory.makeFunctionCallExpr(
+                    calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("assert")),
+                    leftParen: node.leftParen,
+                    argumentList: (
+                        SyntaxFactory.makeTupleExprElementList(
+                            node.argumentList
+                                .map {
+                                    $0
+                                    .withExpression(ExprSyntax(SyntaxFactory.makeVariableExpr("false")))
+                                    .withTrailingComma(nil)
+                                }
+                        )
+                    ),
+                    rightParen: node.rightParen,
+                    trailingClosure: makeAssertTrailingClosure(message: message),
+                    additionalTrailingClosures: node.additionalTrailingClosures
+                )
+            }
             
-        } else if functionName == "assert" {
-            /// assert(age >= 0, "A person's age can't be less than zero.")
-            /// =>
-            /// assert(age >= 0) { "A person's age can't be less than zero." }
             let assertMessage = String(node.argumentList
                                         .last?
                                         .tokens
                                         .compactMap { $0.text }
                                         .joined() ?? "")
-            let containsAssertMessage = (assertMessage.hasPrefix("\"") && assertMessage.hasSuffix("\""))
+            
+            mutNode = makeAssertionFailure(node: node, message: assertMessage)
+            
+        } else if functionName == "assert" {
+            /// assert(age >= 0, "A person's age can't be less than zero.")
+            /// =>
+            /// assert(age >= 0) { "A person's age can't be less than zero." }
+            func makeAssert(node: FunctionCallExprSyntax, message: String) -> FunctionCallExprSyntax {
+                SyntaxFactory.makeFunctionCallExpr(
+                    calledExpression: node.calledExpression,
+                    leftParen: node.leftParen,
+                    argumentList: (
+                        SyntaxFactory.makeTupleExprElementList(
+                            node.argumentList
+                                .dropLast()
+                                .map {
+                                    $0
+                                    .withExpression($0.expression)
+                                    .withTrailingComma(nil)
+                                }
+                        )
+                    ),
+                    rightParen: node.rightParen,
+                    trailingClosure: makeAssertTrailingClosure(message: message),
+                    additionalTrailingClosures: node.additionalTrailingClosures
+                )
+            }
+            
             // ex: assert(age >= 0, "A person's age can't be less than zero.")
             // assertMessage =>
             // "A person's age can't be less than zero."
+            let assertMessage = String(node.argumentList
+                                        .last?
+                                        .tokens
+                                        .compactMap { $0.text }
+                                        .joined() ?? "")
+            
+            let containsAssertMessage = (assertMessage.hasPrefix("\"") && assertMessage.hasSuffix("\""))
             
             if containsAssertMessage {
-                let codeBlock = SyntaxFactory.makeCodeBlockItem(
-                    item: Syntax(
-                        SyntaxFactory.makeVariableExpr(assertMessage)
-                            .withLeadingTrivia(.spaces(1))
-                            .withTrailingTrivia(.spaces(1))
-                    ),
-                    semicolon: nil,
-                    errorTokens: nil
-                )
-
-                let argumentList = SyntaxFactory.makeTupleExprElementList(
-                    node.argumentList
-                        .dropLast()
-                        .map {
-                            $0
-                            .withExpression($0.expression)
-                            .withTrailingComma(nil)
-                        }
-                )
-                
-                let trailingClosure = SyntaxFactory.makeClosureExpr(
-                    leftBrace: SyntaxFactory.makeLeftBraceToken(),
-                    signature: nil,
-                    statements: SyntaxFactory.makeCodeBlockItemList([codeBlock]),
-                    rightBrace: SyntaxFactory.makeRightBraceToken()
-                ).withLeadingTrivia(.spaces(1))
-                
-                mutNode = SyntaxFactory.makeFunctionCallExpr(
-                    calledExpression: node.calledExpression,
-                    leftParen: node.leftParen,
-                    argumentList: argumentList, // node.argumentList,
-                    rightParen: node.rightParen,
-                    trailingClosure: trailingClosure,
-                    additionalTrailingClosures: node.additionalTrailingClosures
-                )
+                mutNode = makeAssert(node: node, message: assertMessage)
             }
 
         } else if syntaxString.contains("(arrayLiteral:") {
@@ -690,8 +684,8 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 additionalTrailingClosures: mutNode.additionalTrailingClosures
             )
             
-        } else if isPrint {
-            let colon = isPrint ? nil : SyntaxFactory.makeIdentifier("=")
+        } else if containsPrint {
+            let colon = containsPrint ? nil : SyntaxFactory.makeIdentifier("=")
             let list = SyntaxFactory.makeTupleExprElementList(
                 mutNode.argumentList.map {
                     SyntaxFactory.makeTupleExprElement(
