@@ -37,6 +37,7 @@ import Foundation
 //    }
 //}
 
+// TODO: due to indent type, it may be possible for isEqual code test to fail.
 func indent(source: String,
             indentType: IndentationType = .tab) -> (Language, String) {
     func recurIndent(lines: [String],

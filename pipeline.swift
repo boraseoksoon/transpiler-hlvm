@@ -15,7 +15,6 @@ public func transpile(_ source: String, to language: Language? = nil) -> String 
         else { return source }
 
     let preprocessedSource = preprocess(source: source, for: language)
-    // TODO: due to indent type, it may be possible for isEqual code test to fail.
     let (_, indentedSource) = indent(source: preprocessedSource, indentType: .space4)
     let AST = try! SyntaxParser.parse(source: indentedSource)
     let generatedCode = generateCode(from: AST, for: language)
@@ -46,6 +45,7 @@ public func preprocess(source: String, for language: Language) -> String {
     }
 }
 
+// TODO: SHOULD NOT BE USED, JUST FOR PROTOTYPING. LET'S SAY print("let is good!")
 public func finalize(source: String, for language: Language) -> String {
     switch language {
         case .kotlin:
@@ -61,6 +61,7 @@ public func finalize(source: String, for language: Language) -> String {
                 .replacingOccurrences(of: "nil", with: "null")
                 .replacingOccurrences(of: "@objc", with: "")
                 .replacingOccurrences(of: "@objcMembers", with: "")
+                .replacingOccurrences(of: "AnyClass", with: "Any")
                 .replacingOccurrences(of: "AnyClass", with: "Any")
                 
         case .python:

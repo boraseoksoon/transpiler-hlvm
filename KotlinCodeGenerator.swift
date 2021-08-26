@@ -17,16 +17,20 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         return super.visit(token)
     }
 
-//    public override func visit(_ node: IdentifierPatternSyntax) -> PatternSyntax {
-//        switch node.identifier.text {
-//            case "octalInteger":
-//
-//            case "hexadecimalDouble":
-//
-//        }
-//
+//    public override func visit(_ node: ConditionElementSyntax) -> Syntax {
+//        print("ConditionElementSyntax : \(node)")
 //        return super.visit(node)
 //    }
+//
+//    public override func visit(_ node: ConditionElementListSyntax) -> Syntax {
+//        print("ConditionElementListSyntax : \(node)")
+//        return super.visit(node)
+//    }
+//
+    public override func visit(_ node: OptionalBindingConditionSyntax) -> Syntax {
+        print("OptionalBindingConditionSyntax : \(node)")
+        return super.visit(node)
+    }
     
     public override func visit(_ node: ForcedValueExprSyntax) -> ExprSyntax {
         print("ForcedValueExprSyntax : \(node)")
@@ -34,8 +38,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         let node = node.withExclamationMark(SyntaxFactory.makeIdentifier("!!"))
         return super.visit(node)
     }
-    
-    
+
     public override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
         print("TupleExprSyntax : \(node)")
         
@@ -136,15 +139,6 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             elseBody: node.elseBody
         )
         
-        return super.visit(node)
-    }
-    
-    public override func visit(_ node: ConditionElementListSyntax) -> Syntax {
-        return super.visit(node)
-    }
-    
-    public override func visit(_ node: ConditionElementSyntax) -> Syntax {
-        // print("ConditionElementSyntax : \(node)")
         return super.visit(node)
     }
     
@@ -442,7 +436,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
-        // print("kotlin ExpressionSegmentSyntax : \(node)")
+        print("kotlin ExpressionSegmentSyntax : \(node)")
         let node = node
             .withBackslash(SyntaxFactory.makeUnknown("$"))
             .withLeftParen(SyntaxFactory.makeUnknown("{"))
@@ -531,6 +525,16 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         return super.visit(node)
     }
     
+    public override func visit(_ node: StringSegmentSyntax) -> Syntax {
+        print("StringSegmentSyntax : \(node)")
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: StringLiteralSegmentsSyntax) -> Syntax {
+        print("StringLiteralSegments : \(node)")
+        return super.visit(node)
+    }
+    
     public override func visit(_ node: TypeAnnotationSyntax) -> Syntax {
         print("TypeAnnotationSyntax : \(node)")
 
@@ -553,13 +557,116 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
-        let calledExpressionTokenJoined = mutNode.calledExpression.tokens
+        let functionName = mutNode.calledExpression.tokens
             .map { $0.text }
             .joined()
         
-        print("calledExpressionTokenJoined!! : \(calledExpressionTokenJoined)")
+//        print("functionName!! : \(functionName)")
+//        print("node.leftParen : \(node.leftParen?.text)")
+//        print("node.argumentList : \(node.argumentList)")
+//        print("node.rightParen : \(node.rightParen?.text)")
+//        print("node.trailingClosure : \(node.trailingClosure)")
+//        print("node.additionalTrailingClosures : \(node.additionalTrailingClosures)")
 
-        if syntaxString.contains("(arrayLiteral:") {
+        if functionName == "assertionFailure" {
+            // assertionFailure("A person's age can't be less than zero.")
+            // =>
+            // assert(false) { "A person's age can't be less than zero." }
+            
+            let assertMessage = String(node.argumentList
+                                        .last?
+                                        .tokens
+                                        .compactMap { $0.text }
+                                        .joined() ?? "")
+            
+            let codeBlock = SyntaxFactory.makeCodeBlockItem(
+                item: Syntax(
+                    SyntaxFactory.makeVariableExpr(assertMessage)
+                        .withLeadingTrivia(.spaces(1))
+                        .withTrailingTrivia(.spaces(1))
+                ),
+                semicolon: nil,
+                errorTokens: nil
+            )
+
+            let argumentList = SyntaxFactory.makeTupleExprElementList(
+                node.argumentList
+                    .map {
+                        $0
+                        .withExpression(ExprSyntax(SyntaxFactory.makeVariableExpr("false")))
+                        .withTrailingComma(nil)
+                    }
+            )
+            
+            let trailingClosure = SyntaxFactory.makeClosureExpr(
+                leftBrace: SyntaxFactory.makeLeftBraceToken(),
+                signature: nil,
+                statements: SyntaxFactory.makeCodeBlockItemList([codeBlock]),
+                rightBrace: SyntaxFactory.makeRightBraceToken()
+            ).withLeadingTrivia(.spaces(1))
+            
+            mutNode = SyntaxFactory.makeFunctionCallExpr(
+                calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("assert")),
+                leftParen: node.leftParen,
+                argumentList: argumentList, // node.argumentList,
+                rightParen: node.rightParen,
+                trailingClosure: trailingClosure,
+                additionalTrailingClosures: node.additionalTrailingClosures
+            )
+            
+        } else if functionName == "assert" {
+            /// assert(age >= 0, "A person's age can't be less than zero.")
+            /// =>
+            /// assert(age >= 0) { "A person's age can't be less than zero." }
+            let assertMessage = String(node.argumentList
+                                        .last?
+                                        .tokens
+                                        .compactMap { $0.text }
+                                        .joined() ?? "")
+            let containsAssertMessage = (assertMessage.hasPrefix("\"") && assertMessage.hasSuffix("\""))
+            // ex: assert(age >= 0, "A person's age can't be less than zero.")
+            // assertMessage =>
+            // "A person's age can't be less than zero."
+            
+            if containsAssertMessage {
+                let codeBlock = SyntaxFactory.makeCodeBlockItem(
+                    item: Syntax(
+                        SyntaxFactory.makeVariableExpr(assertMessage)
+                            .withLeadingTrivia(.spaces(1))
+                            .withTrailingTrivia(.spaces(1))
+                    ),
+                    semicolon: nil,
+                    errorTokens: nil
+                )
+
+                let argumentList = SyntaxFactory.makeTupleExprElementList(
+                    node.argumentList
+                        .dropLast()
+                        .map {
+                            $0
+                            .withExpression($0.expression)
+                            .withTrailingComma(nil)
+                        }
+                )
+                
+                let trailingClosure = SyntaxFactory.makeClosureExpr(
+                    leftBrace: SyntaxFactory.makeLeftBraceToken(),
+                    signature: nil,
+                    statements: SyntaxFactory.makeCodeBlockItemList([codeBlock]),
+                    rightBrace: SyntaxFactory.makeRightBraceToken()
+                ).withLeadingTrivia(.spaces(1))
+                
+                mutNode = SyntaxFactory.makeFunctionCallExpr(
+                    calledExpression: node.calledExpression,
+                    leftParen: node.leftParen,
+                    argumentList: argumentList, // node.argumentList,
+                    rightParen: node.rightParen,
+                    trailingClosure: trailingClosure,
+                    additionalTrailingClosures: node.additionalTrailingClosures
+                )
+            }
+
+        } else if syntaxString.contains("(arrayLiteral:") {
             print("(arrayLiteral: replace!: \(mutNode.argumentList)")
             let left = SyntaxFactory.makeIdentifier("arrayOf(")
             let right = SyntaxFactory.makeIdentifier(")")
@@ -605,21 +712,15 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 additionalTrailingClosures: mutNode.additionalTrailingClosures
             )
         } else {
-            let isArray = calledExpressionTokenJoined.hasPrefix("[") && calledExpressionTokenJoined.hasSuffix("]")
-            
-//            print("calledExpressionTokenJoined : \(calledExpressionTokenJoined)")
-//            print("node.leftParen : \(node.leftParen?.text)")
-//            print("node.argumentList : \(node.argumentList)")
-//            print("node.rightParen : \(node.rightParen?.text)")
-//            print("node.trailingClosure : \(node.trailingClosure)")
-//            print("node.additionalTrailingClosures : \(node.additionalTrailingClosures)")
+            let isArray = functionName.hasPrefix("[") && functionName.hasSuffix("]")
+
             
 //            [Int]
 //            emptyArray<Int>()
             if isArray {
                 print("isArray!")
                 
-                let type = calledExpressionTokenJoined
+                let type = functionName
                     .replacingOccurrences(of: "[", with: "")
                     .replacingOccurrences(of: "]", with: "")
                 
@@ -637,11 +738,11 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             }
             
             if
-                calledExpressionTokenJoined.contains("UInt8") ||
-                calledExpressionTokenJoined.contains("UInt16") ||
-                calledExpressionTokenJoined.contains("UInt32") ||
-                calledExpressionTokenJoined.contains("UInt64") ||
-                calledExpressionTokenJoined.contains("UInt")
+                functionName.contains("UInt8") ||
+                functionName.contains("UInt16") ||
+                functionName.contains("UInt32") ||
+                functionName.contains("UInt64") ||
+                functionName.contains("UInt")
             {
                 mutNode = SyntaxFactory.makeFunctionCallExpr(
                     calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
@@ -652,11 +753,11 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                     additionalTrailingClosures: mutNode.additionalTrailingClosures
                 )
             } else if
-                    calledExpressionTokenJoined.contains("Int8") ||
-                    calledExpressionTokenJoined.contains("Int16") ||
-                    calledExpressionTokenJoined.contains("Int32") ||
-                    calledExpressionTokenJoined.contains("Int64") ||
-                    calledExpressionTokenJoined.contains("Int")
+                    functionName.contains("Int8") ||
+                    functionName.contains("Int16") ||
+                    functionName.contains("Int32") ||
+                    functionName.contains("Int64") ||
+                    functionName.contains("Int")
             {
                 mutNode = SyntaxFactory.makeFunctionCallExpr(
                     calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
@@ -666,7 +767,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                     trailingClosure: mutNode.trailingClosure,
                     additionalTrailingClosures: mutNode.additionalTrailingClosures
                 )
-            } else if calledExpressionTokenJoined.contains("Double") {
+            } else if functionName.contains("Double") {
                 mutNode = SyntaxFactory.makeFunctionCallExpr(
                     calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("")),
                     leftParen: nil,
@@ -687,17 +788,16 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     
 }
 
-func recurScan(
-    node: TokenSyntax?,
-    forKeyword keyword: String,
-    isBackward: Bool
-) -> Bool {
-    node?.text ?? "" == keyword ?
-        true : (node == nil ? false : recurScan(node:isBackward ? node?.previousToken : node?.nextToken,
-                                                forKeyword:keyword,
-                                                isBackward: isBackward))
+func recurScan(node: TokenSyntax?,
+               forKeyword keyword: String,
+               isBackward: Bool) -> Bool {
+    ((node?.text ?? "" == keyword) ? true :
+        (node == nil ? false : recurScan(
+            node:(isBackward ? node?.previousToken : node?.nextToken),
+            forKeyword:keyword,
+            isBackward: isBackward)
+        ))
 }
-
 
 enum RuntimeType {
     case dictionary

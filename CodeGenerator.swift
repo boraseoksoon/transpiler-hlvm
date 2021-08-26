@@ -19,9 +19,9 @@ final class CodeGenerator: SyntaxRewriter {
         
         switch language {
             case .kotlin:
-                self.generator = KotlinCodeGenerator()
+                generator = KotlinCodeGenerator()
             case .python:
-                self.generator = PythonCodeGenerator()
+                generator = PythonCodeGenerator()
             case .clojure:
                 fatalError("Unsupported language to transpile!")
             case .javascript:
@@ -41,7 +41,7 @@ final class CodeGenerator: SyntaxRewriter {
 
 extension CodeGenerator {
     func generate() -> String {
-        self.generator.visit(AST).description
+        generator.visit(AST).description
     }
 }
 

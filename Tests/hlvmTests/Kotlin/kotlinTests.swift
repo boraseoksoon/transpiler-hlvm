@@ -33,6 +33,44 @@ final public class kotlinTests: XCTestCase {
     }
 }
 
+// MARK: - 0. Edge cases [❌]
+extension kotlinTests {
+    func testSwiftSyntaxBug() throws {
+        /// Possibly, SwiftSyntax bug?
+        /// when escape character is used with tuple expression in print,
+        /// node root is not divided line by line but token is linked all the way
+        /// up uptil the top of source
+        /// (here => let)
+        let swiftSource = """
+        let possibleNumber = 20
+        print("The string \"\\(possibleNumber)\"")
+        """
+
+        let kotlinSource = """
+        """
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    
+    func testEscapeCharacter() throws {
+        let swiftSource = """
+        print("The string \" \\(possibleNumber)\"")
+        """
+
+        let kotlinSource = """
+        print("The string \"${possibleNumber}\"")
+        """
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
 // MARK: - 1. Constants and Variables [✅]
 extension kotlinTests {
 //    - Declaring Constants and Variables [✅]
@@ -625,9 +663,24 @@ extension kotlinTests {
     // - Optional Binding [❌]
     func testOptionalBinding() throws {
         let swiftSource = """
+        let possibleNumber: String = "10"
+
+        if let actualNumber = Int(possibleNumber) {
+            print("The string \\(possibleNumber) has an integer value of \\(actualNumber)")
+        } else {
+            print("The string \\(possibleNumber) couldn't be converted to an integer")
+        }
         """
 
         let kotlinSource = """
+        val possibleNumber: String = "10"
+        
+        val actualNumber = possibleNumber.toInt()
+        if (actualNumber != null) {
+           print("The string ${actualNumber} has an integer value of ${actualNumber}")
+        } else {
+            print("The string ${possibleNumber} couldn't be converted to an integer")
+        }
         """
 
         try isEqual(
@@ -639,6 +692,52 @@ extension kotlinTests {
     // - Implicitly Unwrapped Optionals [❌]
     func testImplicitlyUnwrappedOptionals() throws {
         let swiftSource = """
+        let possibleString: String? = "An optional string."
+        let forcedString: String = possibleString! // requires an exclamation point
+
+        let assumedString: String! = "An implicitly unwrapped optional string."
+        let implicitString: String = assumedString // no need for an exclamation point
+        """
+
+        let kotlinSource = """
+        TBD
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 14. Error Handling [❌]
+extension kotlinTests {
+    func testTryCatchBasic() throws {
+        let swiftSource = """
+        func canThrowAnError() throws {
+            // this function may or may not throw an error
+        }
+
+        do {
+            try canThrowAnError()
+            // no error was thrown
+        } catch {
+            // an error was thrown
+        }
+        
+        func makeASandwich() throws {
+            //
+        }
+
+        do {
+            try makeASandwich()
+            eatASandwich()
+        } catch SandwichError.outOfCleanDishes {
+            washDishes()
+        } catch SandwichError.missingIngredients(let ingredients) {
+            buyGroceries(ingredients)
+        }
+        
         """
 
         let kotlinSource = """
@@ -649,9 +748,70 @@ extension kotlinTests {
             kotlinSource: kotlinSource
         )
     }
-
 }
 
+// MARK: - 15. Assertions and Preconditions [❌]
+extension kotlinTests {
+    // Debugging with Assertions [✅]
+    func testAssert() throws {
+        let swiftSource = """
+        let age = -3
+        assert(age >= 0, "A person's age can't be less than zero.")
+        // This assertion fails because -3 isn't >= 0.
+
+        assert(age >= 0)
+
+        if age > 10 {
+            print("You can ride the roller-coaster or the ferris wheel.")
+        } else if age >= 0 {
+            print("You can ride the ferris wheel.")
+        } else {
+            assertionFailure("A person's age can't be less than zero.")
+        }
+        """
+        
+        let kotlinSource = """
+        val age = -3
+        assert(age >= 0) { "A person's age can't be less than zero." }
+        // This assertion fails because -3 isn't >= 0.
+
+        assert(age >= 0)
+
+        if (age > 10) {
+            print("You can ride the roller-coaster or the ferris wheel.")
+        } else if (age >= 0) {
+            print("You can ride the ferris wheel.")
+        } else {
+            assert(false) { "A person's age can't be less than zero." }
+        }
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+
+    // Enforcing Preconditions [❌]
+    func testEnforcingPreconditions() throws {
+        let swiftSource = """
+        // In the implementation of a subscript...
+        precondition(index > 0, "Index must be greater than zero.")
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+
+
+// MARK: - 99. TEST [❌]
 extension kotlinTests {
     func testTemplate() throws {
         let swiftSource = """
