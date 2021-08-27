@@ -44,7 +44,7 @@
     - Optional Binding [❌]
     - Implicitly Unwrapped Optionals [❌]
 14. Error Handling [❌]
-15. Assertions and Preconditions
-    - Debugging with Assertions [❌]
-    - Enforcing Preconditions [❌]
+15. Assertions and Preconditions [❌]
+    - Debugging with Assertions [✅]
+    - Enforcing Preconditions [✅]
 

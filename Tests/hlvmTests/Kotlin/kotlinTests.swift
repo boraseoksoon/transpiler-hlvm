@@ -23,6 +23,7 @@ final public class kotlinTests: XCTestCase {
     func isEqual(swiftSource: String, kotlinSource: String) throws {
         let code1 = transpile(input(source: swiftSource), to: Language.kotlin)
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        
         let code2 = kotlinSource
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -165,50 +166,50 @@ extension kotlinTests {
     }
     
     // - Multiline comments [✅]
-//    func testMultilineComments() throws {
-//        let swiftSource = """
-//        /* This is also a comment
-//        but is written over multiple lines. */
-//        /**
-//         * You can edit, run, and share this code.
-//         * play.kotlinlang.org
-//         */
-//        """
-//
-//        let kotlinSource = """
-//        /* This is also a comment
-//        but is written over multiple lines. */
-//        /**
-//         * You can edit, run, and share this code.
-//         * play.kotlinlang.org
-//         */
-//        """
-//
-//        try isEqual(
-//            swiftSource: swiftSource,
-//            kotlinSource: kotlinSource
-//        )
-//    }
+    func testMultilineComments() throws {
+        let swiftSource = """
+        /* This is also a comment
+        but is written over multiple lines. */
+        /**
+         * You can edit, run, and share this code.
+         * play.kotlinlang.org
+         */
+        """
+
+        let kotlinSource = """
+        /* This is also a comment
+        but is written over multiple lines. */
+        /**
+         * You can edit, run, and share this code.
+         * play.kotlinlang.org
+         */
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
     
     // - Nested multiline comments [❌]
-//    func testNestedMultilineComments() throws {
-//        let swiftSource = """
-//        /* This is the start of the first multiline comment.
-//         /* This is the second, nested multiline comment. */
-//        This is the end of the first multiline comment. */
-//        """
-//
-//        let kotlinSource = """
-//        /* This is the start of the first multiline comment.
-//         /* This is the second, nested multiline comment. */
-//        This is the end of the first multiline comment. */
-//        """
-//
-//        try isEqual(
-//            swiftSource: swiftSource,
-//            kotlinSource: kotlinSource
-//        )
-//    }
+    func testNestedMultilineComments() throws {
+        let swiftSource = """
+        /* This is the start of the first multiline comment.
+         /* This is the second, nested multiline comment. */
+        This is the end of the first multiline comment. */
+        """
+
+        let kotlinSource = """
+        /* This is the start of the first multiline comment.
+         /* This is the second, nested multiline comment. */
+        This is the end of the first multiline comment. */
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
 }
 
 // MARK: - 3. Semicolons [✅]
@@ -792,14 +793,18 @@ extension kotlinTests {
         )
     }
 
-    // Enforcing Preconditions [❌]
+    // Enforcing Preconditions [✅]
     func testEnforcingPreconditions() throws {
         let swiftSource = """
+        let index = -1
         // In the implementation of a subscript...
         precondition(index > 0, "Index must be greater than zero.")
         """
 
         let kotlinSource = """
+        val index = -1
+        // In the implementation of a subscript...
+        require(index > 0) { "Index must be greater than zero." }
         """
 
         try isEqual(
@@ -808,8 +813,6 @@ extension kotlinTests {
         )
     }
 }
-
-
 
 // MARK: - 99. TEST [❌]
 extension kotlinTests {

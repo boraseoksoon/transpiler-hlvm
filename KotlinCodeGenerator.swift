@@ -620,13 +620,14 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             
             mutNode = makeAssertionFailure(node: node, message: assertMessage)
             
-        } else if functionName == "assert" {
+        } else if functionName == "assert" || functionName == "precondition" {
             /// assert(age >= 0, "A person's age can't be less than zero.")
             /// =>
             /// assert(age >= 0) { "A person's age can't be less than zero." }
-            func makeAssert(node: FunctionCallExprSyntax, message: String) -> FunctionCallExprSyntax {
+            
+            func makeAssert(node: FunctionCallExprSyntax, functionName: String, message: String) -> FunctionCallExprSyntax {
                 SyntaxFactory.makeFunctionCallExpr(
-                    calledExpression: node.calledExpression,
+                    calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr(functionName)),
                     leftParen: node.leftParen,
                     argumentList: (
                         SyntaxFactory.makeTupleExprElementList(
@@ -657,7 +658,9 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             let containsAssertMessage = (assertMessage.hasPrefix("\"") && assertMessage.hasSuffix("\""))
             
             if containsAssertMessage {
-                mutNode = makeAssert(node: node, message: assertMessage)
+                mutNode = makeAssert(node: node,
+                                     functionName: (functionName != "assert" ? "require" : functionName),
+                                     message: assertMessage)
             }
 
         } else if syntaxString.contains("(arrayLiteral:") {
