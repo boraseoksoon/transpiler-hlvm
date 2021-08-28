@@ -73,6 +73,101 @@ extension KotlinBasicOperatorsTests {
     }
 }
 
+// MARK: - 2. Arithmetic Operators [❌]
+extension KotlinBasicOperatorsTests {
+    // - Addition (+)  [❌]
+    func testAddition() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    // - Subtraction (-) [❌]
+    func testSubtraction() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    // - Multiplication (*) [❌]
+    func testMultiplication() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    // - Division (/) [❌]
+    func testDivision() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    // - Remainder Operator [❌]
+    func testRemainderOperator() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    // - Unary Minus Operator [❌]
+    func testUnaryMinusOperator() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    // - Unary Plus Operator [❌]
+    func testUnaryPlusOperator() throws {
+        let swiftSource = """
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
 // MARK: - 99. TEST [❌]
 extension KotlinBasicOperatorsTests {
     func testTemplate() throws {
