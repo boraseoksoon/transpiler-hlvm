@@ -10,10 +10,10 @@
 2. Comments [✅]
     - Single-line comments [✅]
     - Multiline comments [✅]
-    - Nested multiline comments [❌]
+    - Nested multiline comments [✅]
 
 3. Semicolons
-    - Optional semicolons [❌]
+    - Optional semicolons [✅]
     
 4. Integers [✅]
     - Integer Bounds [✅]
@@ -44,7 +44,7 @@
     - Optional Binding [❌]
     - Implicitly Unwrapped Optionals [❌]
 14. Error Handling [❌]
-15. Assertions and Preconditions [❌]
+15. Assertions and Preconditions [✅]
     - Debugging with Assertions [✅]
     - Enforcing Preconditions [✅]
 

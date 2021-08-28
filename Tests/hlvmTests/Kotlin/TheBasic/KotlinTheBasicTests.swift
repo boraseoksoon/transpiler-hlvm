@@ -9,7 +9,7 @@ import XCTest
 import class Foundation.Bundle
 import hlvm
 
-final public class kotlinTests: XCTestCase {
+final public class KotlinTheBasicTests: XCTestCase {
     private let language: Language = .kotlin
     
     func input(source: String) -> String {
@@ -21,7 +21,7 @@ final public class kotlinTests: XCTestCase {
     }
     
     func isEqual(swiftSource: String, kotlinSource: String) throws {
-        let code1 = transpile(input(source: swiftSource), to: Language.kotlin)
+        let code1 = transpile(input(source: swiftSource), to: language)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
         let code2 = kotlinSource
@@ -30,12 +30,13 @@ final public class kotlinTests: XCTestCase {
         print(code1)
         print("**** divider *****")
         print(code2)
+        
         XCTAssertEqual(code1, code2)
     }
 }
 
 // MARK: - 0. Edge cases [❌]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testSwiftSyntaxBug() throws {
         /// Possibly, SwiftSyntax bug?
         /// when escape character is used with tuple expression in print,
@@ -73,8 +74,8 @@ extension kotlinTests {
 }
 
 // MARK: - 1. Constants and Variables [✅]
-extension kotlinTests {
-//    - Declaring Constants and Variables [✅]
+extension KotlinTheBasicTests {
+    //    - Declaring Constants and Variables [✅]
     func testConstantAndVariable() throws {
         let swiftSource = """
         let maximumNumberOfLoginAttempts = 10
@@ -92,7 +93,7 @@ extension kotlinTests {
         )
     }
     
-//    - Type Annotations [✅]
+    //    - Type Annotations [✅]
     func testTypeAnnotation() throws {
         let swiftSource = """
         var red, green, blue: Double
@@ -108,7 +109,7 @@ extension kotlinTests {
         )
     }
     
-//    - Naming Constants and Variables [✅]
+    //    - Naming Constants and Variables [✅]
     func testNamingConstantsAndVariables() throws {
         let swiftSource = """
         let π = 3.14159
@@ -128,7 +129,7 @@ extension kotlinTests {
         )
     }
     
-//    - Printing Constants and Variables [✅]
+    //    - Printing Constants and Variables [✅]
     func testPrint() throws {
         let swiftSource = """
         print(friendlyWelcome)
@@ -148,7 +149,7 @@ extension kotlinTests {
 }
 
 // MARK: - 2. Comments [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     // - Single-line comments [✅]
     func testSinglelineComments() throws {
         let swiftSource = """
@@ -167,6 +168,7 @@ extension kotlinTests {
     
     // - Multiline comments [✅]
     func testMultilineComments() throws {
+        // indent function will indent to the left *, removing leading spaces.
         let swiftSource = """
         /* This is also a comment
         but is written over multiple lines. */
@@ -180,9 +182,9 @@ extension kotlinTests {
         /* This is also a comment
         but is written over multiple lines. */
         /**
-         * You can edit, run, and share this code.
-         * play.kotlinlang.org
-         */
+        * You can edit, run, and share this code.
+        * play.kotlinlang.org
+        */
         """
 
         try isEqual(
@@ -191,17 +193,17 @@ extension kotlinTests {
         )
     }
     
-    // - Nested multiline comments [❌]
+    // - Nested multiline comments [✅]
     func testNestedMultilineComments() throws {
         let swiftSource = """
         /* This is the start of the first multiline comment.
-         /* This is the second, nested multiline comment. */
+        /* This is the second, nested multiline comment. */
         This is the end of the first multiline comment. */
         """
 
         let kotlinSource = """
         /* This is the start of the first multiline comment.
-         /* This is the second, nested multiline comment. */
+        /* This is the second, nested multiline comment. */
         This is the end of the first multiline comment. */
         """
 
@@ -213,7 +215,7 @@ extension kotlinTests {
 }
 
 // MARK: - 3. Semicolons [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     // - Optional semicolons [✅]
     func testOptionalSemicolons() throws {
         let swiftSource = """
@@ -232,7 +234,7 @@ extension kotlinTests {
 }
 
 // MARK: - 4. Integers [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     // Integer Bounds [✅]
     func testMaximumInteger() throws {
         let swiftSource = """
@@ -309,7 +311,7 @@ extension kotlinTests {
 }
 
 // MARK: - 5. Floating-Point Numbers [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     // - Double [🌟]
     func testDouble() throws {
         let swiftSource = """
@@ -340,7 +342,7 @@ extension kotlinTests {
 }
 
 // MARK: - 6. Type Safety and Type Inference [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     // - Type Inference [🌟]
     func testTypeInference() throws {
         let swiftSource = """
@@ -361,7 +363,7 @@ extension kotlinTests {
 }
 
 // MARK: - 7. Numeric Literals [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testNumericLiteral() throws {
         let swiftSource = """
         let decimalInteger = 17
@@ -397,7 +399,7 @@ extension kotlinTests {
 }
 
 // MARK: - 8. Numeric Type Conversion [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testNumericTypeConversion() throws {
         let swiftSource = """
         let twoThousand: UInt16 = 2_000
@@ -424,7 +426,7 @@ extension kotlinTests {
 }
 
 // MARK: - 9. Integer and Floating-Point Conversion [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testFloatingConversion() throws {
         let swiftSource = """
         let three = 3
@@ -451,7 +453,7 @@ extension kotlinTests {
 }
 
 // MARK: - 10. Type Aliases [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testTypeAlias() throws {
         let swiftSource = """
         typealias AudioSample = UInt16
@@ -469,7 +471,7 @@ extension kotlinTests {
 }
 
 // MARK: - 11. Boolean [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testBoolean() throws {
         let swiftSource = """
         let orangesAreOrange = true
@@ -527,7 +529,7 @@ extension kotlinTests {
 }
 
 // MARK: - 12. Tuples  [✅]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testTuples() throws {
 //        let swiftSource = """
 //        let http404Error = (404, "Not Found")
@@ -593,7 +595,7 @@ extension kotlinTests {
 }
 
 // MARK: - 13. Optionals [❌]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     // - nil [✅]
     func testNil() throws {
         let swiftSource = """
@@ -712,7 +714,7 @@ extension kotlinTests {
 }
 
 // MARK: - 14. Error Handling [❌]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testTryCatchBasic() throws {
         let swiftSource = """
         func canThrowAnError() throws {
@@ -752,7 +754,7 @@ extension kotlinTests {
 }
 
 // MARK: - 15. Assertions and Preconditions [❌]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     // Debugging with Assertions [✅]
     func testAssert() throws {
         let swiftSource = """
@@ -815,7 +817,7 @@ extension kotlinTests {
 }
 
 // MARK: - 99. TEST [❌]
-extension kotlinTests {
+extension KotlinTheBasicTests {
     func testTemplate() throws {
         let swiftSource = """
         """

@@ -10,19 +10,17 @@ import SwiftSyntax
 
 let source = """
 kotlin {
-                    let age = -3
-                    assert(age >= 0, "A person's age can't be less than zero.")
-                    // This assertion fails because -3 isn't >= 0.
+    let b = 10
+    var a = 5
+    a = b
+    // a is now equal to 10
 
-                    assert(age >= 0)
+    let (x, y) = (1, 2)
+    // x is equal to 1, and y is equal to 2
 
-                    if age > 10 {
-                        print("You can ride the roller-coaster or the ferris wheel.")
-                    } else if age >= 0 {
-                        print("You can ride the ferris wheel.")
-                    } else {
-                        assertionFailure("A person's age can't be less than zero.")
-                    }
+    if x == y {
+        // This isn't valid, because x = y doesn't return a value.
+    }
 }
 """
 

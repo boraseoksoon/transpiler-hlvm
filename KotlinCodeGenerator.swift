@@ -17,16 +17,6 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         return super.visit(token)
     }
 
-//    public override func visit(_ node: ConditionElementSyntax) -> Syntax {
-//        print("ConditionElementSyntax : \(node)")
-//        return super.visit(node)
-//    }
-//
-//    public override func visit(_ node: ConditionElementListSyntax) -> Syntax {
-//        print("ConditionElementListSyntax : \(node)")
-//        return super.visit(node)
-//    }
-//
     public override func visit(_ node: OptionalBindingConditionSyntax) -> Syntax {
         print("OptionalBindingConditionSyntax : \(node)")
         return super.visit(node)
@@ -91,26 +81,57 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             
             return super.visit(mutNode)
         } else {
-            /// Example:
-            /// let http404Error = (404, "Not Found")
+            /// let (x, y) = (1, 2)
             /// =>
-            /// val http404Error = arrayOf(404, "Not Found")
-            func transformTupleToKotlinArray(node: TupleExprSyntax) -> TupleExprSyntax {
-                SyntaxFactory.makeTupleExpr(
-                    leftParen: SyntaxFactory.makeIdentifier("arrayOf("),
-                    elementList: node.elementList,
-                    rightParen: SyntaxFactory.makeIdentifier(")")
-                )
-            }
+            /// val (x, y) = Pair(1, 2)
+            
+//            print("node.tokens.map { $0.text }.joined(): \(node.tokens.map { $0.text }.joined())")
+//            print("node.previousToken?.text : \(node.previousToken?.text)")
+//            print("node.previousToken?.previousToken?.text : \(node.previousToken?.previousToken?.text)")
+//            print("node.previousToken?.previousToken?.previousToken?.text : \(node.previousToken?.previousToken?.previousToken?.text)")
+            
+            
+            // let (x, y) = (1, 2)
+            // let (x"," y")" = (1, 2)
+            let rightParen = node.previousToken?.previousToken?.text
+            let comma = node.previousToken?.previousToken?.previousToken?.previousToken?.text
 
-            if isInitializerClause {
-                if let identifierName = node.previousToken?.previousToken?.text {
-                    runtimeTypeTable[identifierName] = .array
-                    mutNode = transformTupleToKotlinArray(node: node)
+            if rightParen == ")" && comma == "," {
+                func transformTupleToKotlinPair(node: TupleExprSyntax) -> TupleExprSyntax {
+                    SyntaxFactory.makeTupleExpr(
+                        leftParen: SyntaxFactory.makeIdentifier("Pair("),
+                        elementList: node.elementList,
+                        rightParen: SyntaxFactory.makeIdentifier(")")
+                    )
                 }
-            }
+                
+                if isInitializerClause {
+                    mutNode = transformTupleToKotlinPair(node: node)
+                }
 
-            return super.visit(mutNode)
+                return super.visit(mutNode)
+            } else {
+                /// Example:
+                /// let http404Error = (404, "Not Found")
+                /// =>
+                /// val http404Error = arrayOf(404, "Not Found")
+                func transformTupleToKotlinArray(node: TupleExprSyntax) -> TupleExprSyntax {
+                    SyntaxFactory.makeTupleExpr(
+                        leftParen: SyntaxFactory.makeIdentifier("arrayOf("),
+                        elementList: node.elementList,
+                        rightParen: SyntaxFactory.makeIdentifier(")")
+                    )
+                }
+
+                if isInitializerClause {
+                    if let identifierName = node.previousToken?.previousToken?.text {
+                        runtimeTypeTable[identifierName] = .array
+                        mutNode = transformTupleToKotlinArray(node: node)
+                    }
+                }
+
+                return super.visit(mutNode)
+            }
         }
     }
     
