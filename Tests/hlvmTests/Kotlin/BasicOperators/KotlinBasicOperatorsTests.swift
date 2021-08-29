@@ -404,13 +404,68 @@ extension KotlinBasicOperatorsTests {
         )
     }
     
-    // - One-Sided Ranges [❌]
+    // - One-Sided Ranges [✅]
     func testOneSidedRanges() throws {
         let swiftSource = """
-        b
+        let names = ["Anna", "Alex", "Brian", "Jack"]
+        for name in names[...2] {
+            print(name)
+        }
+
+        //Anna
+        //Alex
+        //Brian
+
+        for name in names[2...] {
+            print(name)
+        }
+
+        // Brian
+        // Jack
+
+        for name in names[...2] {
+            print(name)
+        }
+        // Anna
+        // Alex
+        // Brian
+
+        for name in names[..<2] {
+            print(name)
+        }
+        // Anna
+        // Alex
         """
 
         let kotlinSource = """
+        val names = arrayOf("Anna","Alex","Brian","Jack")
+        for (name in names.slice(0..2)) {
+            print(name)
+        }
+
+        //Anna
+        //Alex
+        //Brian
+
+        for (name in names.slice(2..names.count() - 1)) {
+            print(name)
+        }
+
+        // Brian
+        // Jack
+
+        for (name in names.slice(0..2)) {
+            print(name)
+        }
+        // Anna
+        // Alex
+        // Brian
+
+        for (name in names.slice(0..1)) {
+            print(name)
+        }
+        // Anna
+        // Alex
         """
 
         try isEqual(

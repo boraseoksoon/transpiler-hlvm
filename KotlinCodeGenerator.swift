@@ -562,10 +562,84 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         print("node.sequenceExpr.description : \(node.sequenceExpr.description)")
         
         var sequenceExprDescription = node.sequenceExpr.description
-        if node.sequenceExpr.description.contains("..<") {
+            .replacingOccurrences(of: " ", with: "")
+       
+        if sequenceExprDescription.hasSuffix("...") {
+            // WARN: infinite loop
+            
+//            for i in 0... {
+//                sleep(1)
+//                print(i)
+//            }
+//            =>
+//            for (i in 0..Int.MAX_VALUE) {
+//               sleep(1)
+//               print(i)
+//            }
+            
+            sequenceExprDescription = "0..Int.MAX_VALUE"
+        } else if sequenceExprDescription.contains("..<]") {
+//            let names = ["Anna", "Alex", "Brian", "Jack"]
+//            for name in names[2..<] {
+//                print(name)
+//            }
+//            =>
+//            for (i in names.slice(2..names.count() - 1)) {
+//                print(i)
+//            }
+            let array = sequenceExprDescription.components(separatedBy: "[")
+            if let arrayName = array.first, let startIndex = array.last?.components(separatedBy: "..<]").first {
+                sequenceExprDescription = "\(arrayName).slice(\(startIndex)..\(arrayName).count() - 2)"
+            }
+            
+        } else if sequenceExprDescription.contains("[..<") {
+//            for name in names[..<2] {
+//                print(name)
+//            }
+//            =>
+//            for (i in names.slice(0..2-1)) {
+//                print(i)
+//            }
+
+            if let arrayName = sequenceExprDescription.components(separatedBy: "[").first,
+               let lastIndex = Int(sequenceExprDescription
+                                    .components(separatedBy: "[..<")
+                                    .last?
+                                    .replacingOccurrences(of: "]", with: "")
+                                    .replacingOccurrences(of: " ", with: "") ?? "0"),
+                lastIndex - 1 >= 0 {
+                sequenceExprDescription = "\(arrayName).slice(0..\(lastIndex-1))"
+            }
+        } else if sequenceExprDescription.contains("...]") {
+//            for name in names[2...] {
+//                print(name)
+//            }
+//            =>
+//            for (i in names.slice(2..names.count() - 1)) {
+//                print(i)
+//            }
+            let array = sequenceExprDescription.components(separatedBy: "[")
+            if let arrayName = array.first, let startIndex = array.last?.components(separatedBy: "...]").first {
+                sequenceExprDescription = "\(arrayName).slice(\(startIndex)..\(arrayName).count() - 1)"
+            }
+        } else if sequenceExprDescription.contains("[...") {
+//            let names = ["Anna", "Alex", "Brian", "Jack"]
+//            for name in names[...2] {
+//                print(name)
+//            }
+            if let arrayName = sequenceExprDescription.components(separatedBy: "[").first,
+               let lastIndex = Int(sequenceExprDescription
+                                    .components(separatedBy: "[...")
+                                    .last?
+                                    .replacingOccurrences(of: "]", with: "")
+                                    .replacingOccurrences(of: " ", with: "") ?? "0"),
+                lastIndex - 1 >= 0 {
+                sequenceExprDescription = "\(arrayName).slice(0..\(lastIndex))"
+            }
+        } else if sequenceExprDescription.contains("..<") {
             sequenceExprDescription = sequenceExprDescription.replacingOccurrences(of: "..<", with: "..")
             sequenceExprDescription = sequenceExprDescription + "- 1" 
-        } else if node.sequenceExpr.description.contains("...") {
+        } else if sequenceExprDescription.contains("...") {
             sequenceExprDescription = sequenceExprDescription.replacingOccurrences(of: "...", with: "..")
         }
         
