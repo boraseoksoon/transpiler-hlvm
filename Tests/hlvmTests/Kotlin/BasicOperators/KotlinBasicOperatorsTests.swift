@@ -35,7 +35,7 @@ final public class KotlinBasicOperatorsTests: XCTestCase {
     }
 }
 
-// MARK: - 1. Assignment Operator [❌]
+// MARK: - 1. Assignment Operator [✅]
 extension KotlinBasicOperatorsTests {
     func testAssignmentOperator() throws {
         let swiftSource = """
@@ -73,14 +73,16 @@ extension KotlinBasicOperatorsTests {
     }
 }
 
-// MARK: - 2. Arithmetic Operators [❌]
+// MARK: - 2. Arithmetic Operators [✅]
 extension KotlinBasicOperatorsTests {
-    // - Addition (+)  [❌]
+    // - Addition (+)  [✅]
     func testAddition() throws {
         let swiftSource = """
+        1 + 2       // equals 3
         """
 
         let kotlinSource = """
+        1 + 2       // equals 3
         """
 
         try isEqual(
@@ -88,12 +90,15 @@ extension KotlinBasicOperatorsTests {
             kotlinSource: kotlinSource
         )
     }
-    // - Subtraction (-) [❌]
+    
+    // - Subtraction (-) [✅]
     func testSubtraction() throws {
         let swiftSource = """
+        5 - 3       // equals 2
         """
 
         let kotlinSource = """
+        5 - 3       // equals 2
         """
 
         try isEqual(
@@ -101,12 +106,14 @@ extension KotlinBasicOperatorsTests {
             kotlinSource: kotlinSource
         )
     }
-    // - Multiplication (*) [❌]
+    // - Multiplication (*) [✅]
     func testMultiplication() throws {
         let swiftSource = """
+        2 * 3       // equals 6
         """
 
         let kotlinSource = """
+        2 * 3       // equals 6
         """
 
         try isEqual(
@@ -114,12 +121,14 @@ extension KotlinBasicOperatorsTests {
             kotlinSource: kotlinSource
         )
     }
-    // - Division (/) [❌]
+    // - Division (/) [✅]
     func testDivision() throws {
         let swiftSource = """
+        10.0 / 2.5  // equals 4.0
         """
 
         let kotlinSource = """
+        10.0 / 2.5  // equals 4.0
         """
 
         try isEqual(
@@ -127,12 +136,14 @@ extension KotlinBasicOperatorsTests {
             kotlinSource: kotlinSource
         )
     }
-    // - Remainder Operator [❌]
+    // - Remainder Operator [✅]
     func testRemainderOperator() throws {
         let swiftSource = """
+        9 % 4
         """
 
         let kotlinSource = """
+        9 % 4
         """
 
         try isEqual(
@@ -140,12 +151,18 @@ extension KotlinBasicOperatorsTests {
             kotlinSource: kotlinSource
         )
     }
-    // - Unary Minus Operator [❌]
+    // - Unary Minus Operator [✅]
     func testUnaryMinusOperator() throws {
         let swiftSource = """
+        let three = 3
+        let minusThree = -three       // minusThree equals -3
+        let plusThree = -minusThree   // plusThree equals 3, or "minus minus three"
         """
 
         let kotlinSource = """
+        val three = 3
+        val minusThree = -three       // minusThree equals -3
+        val plusThree = -minusThree   // plusThree equals 3, or "minus minus three"
         """
 
         try isEqual(
@@ -153,12 +170,167 @@ extension KotlinBasicOperatorsTests {
             kotlinSource: kotlinSource
         )
     }
-    // - Unary Plus Operator [❌]
+    // - Unary Plus Operator [✅]
     func testUnaryPlusOperator() throws {
         let swiftSource = """
+        let minusSix = -6
+        let alsoMinusSix = +minusSix  // alsoMinusSix equals -6
         """
 
         let kotlinSource = """
+        val minusSix = -6
+        val alsoMinusSix = +minusSix  // alsoMinusSix equals -6
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 3. Compound Assignment Operators [✅]
+extension KotlinBasicOperatorsTests {
+    func testCompoundAssignmentOperators() throws {
+        let swiftSource = """
+        var a = 1
+        a += 2
+        """
+
+        let kotlinSource = """
+        var a = 1
+        a += 2
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 4. Comparison Operators [❌]
+extension KotlinBasicOperatorsTests {
+    func testComparisonOperators() throws {
+        let swiftSource = """
+        1 == 1   // true because 1 is equal to 1
+        2 != 1   // true because 2 isn't equal to 1
+        2 > 1    // true because 2 is greater than 1
+        1 < 2    // true because 1 is less than 2
+        1 >= 1   // true because 1 is greater than or equal to 1
+        2 <= 1   // false because 2 isn't less than or equal to 1
+        
+        let name = "world"
+        if name == "world" {
+            print("hello, world")
+        } else {
+            print("I'm sorry \\(name), but I don't recognize you")
+        }
+        // Prints "hello, world", because name is indeed equal to "world".
+        
+        (1, "zebra") < (2, "apple")   // true because 1 is less than 2; "zebra" and "apple" aren't compared
+        (3, "apple") < (3, "bird")    // true because 3 is equal to 3, and "apple" is less than "bird"
+        (4, "dog") == (4, "dog")      // true because 4 is equal to 4, and "dog" is equal to "dog"
+        
+        ("blue", -1) < ("purple", 1)        // OK, evaluates to true
+        ("blue", false) < ("purple", true)  // Error because < can't compare Boolean values
+        """
+
+        let kotlinSource = """
+        1 == 1   // true because 1 is equal to 1
+        2 != 1   // true because 2 isn't equal to 1
+        2 > 1    // true because 2 is greater than 1
+        1 < 2    // true because 1 is less than 2
+        1 >= 1   // true because 1 is greater than or equal to 1
+        2 <= 1   // false because 2 isn't less than or equal to 1
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 5. Ternary Conditional Operator [✅]
+extension KotlinBasicOperatorsTests {
+    func testTernaryConditionalOperator() throws {
+        let swiftSource = """
+        let question = false
+        let answer1 = true
+        let answer2 = false
+
+        if question {
+            answer1
+        } else {
+            answer2
+        }
+
+        let contentHeight = 40
+        let hasHeader = true
+        var rowHeight = contentHeight + (hasHeader ? 50 : 20)
+
+        if hasHeader {
+            rowHeight = contentHeight + 50
+        } else {
+            rowHeight = contentHeight + 20
+        }
+        """
+
+        let kotlinSource = """
+        val question = false
+        val answer1 = true
+        val answer2 = false
+
+        if (question) {
+            answer1
+        } else {
+            answer2
+        }
+
+        val contentHeight = 40
+        val hasHeader = true
+        var rowHeight = contentHeight + (if (hasHeader) 50 else 20)
+
+        if (hasHeader) {
+            rowHeight = contentHeight + 50
+        } else {
+            rowHeight = contentHeight + 20
+        }
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+// MARK: - 6. Nil-Coalescing Operator [✅]
+extension KotlinBasicOperatorsTests {
+    func testNilCoalescingOperator() throws {
+        let swiftSource = """
+        let defaultColorName = "red"
+        var userDefinedColorName: String?   // defaults to nil
+
+        var colorNameToUse = userDefinedColorName ?? defaultColorName
+        // userDefinedColorName is nil, so colorNameToUse is set to the default of "red"
+        
+        userDefinedColorName = "green"
+        colorNameToUse = userDefinedColorName ?? defaultColorName
+        // userDefinedColorName isn't nil, so colorNameToUse is set to "green"
+        """
+
+        let kotlinSource = """
+        val defaultColorName = "red"
+        var userDefinedColorName: String? = null // defaults to null
+
+        var colorNameToUse = userDefinedColorName ?: defaultColorName
+        // userDefinedColorName is null, so colorNameToUse is set to the default of "red"
+
+        userDefinedColorName = "green"
+        colorNameToUse = userDefinedColorName ?: defaultColorName
+        // userDefinedColorName isn't null, so colorNameToUse is set to "green"
         """
 
         try isEqual(
@@ -172,6 +344,7 @@ extension KotlinBasicOperatorsTests {
 extension KotlinBasicOperatorsTests {
     func testTemplate() throws {
         let swiftSource = """
+        b
         """
 
         let kotlinSource = """

@@ -85,10 +85,10 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             /// =>
             /// val (x, y) = Pair(1, 2)
             
-//            print("node.tokens.map { $0.text }.joined(): \(node.tokens.map { $0.text }.joined())")
-//            print("node.previousToken?.text : \(node.previousToken?.text)")
-//            print("node.previousToken?.previousToken?.text : \(node.previousToken?.previousToken?.text)")
-//            print("node.previousToken?.previousToken?.previousToken?.text : \(node.previousToken?.previousToken?.previousToken?.text)")
+            print("node.tokens.map { $0.text }.joined(): \(node.tokens.map { $0.text }.joined())")
+            print("node.previousToken?.text : \(node.previousToken?.text)")
+            print("node.previousToken?.previousToken?.text : \(node.previousToken?.previousToken?.text)")
+            print("node.previousToken?.previousToken?.previousToken?.text : \(node.previousToken?.previousToken?.previousToken?.text)")
             
             
             // let (x, y) = (1, 2)
@@ -111,26 +111,32 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 
                 return super.visit(mutNode)
             } else {
-                /// Example:
-                /// let http404Error = (404, "Not Found")
-                /// =>
-                /// val http404Error = arrayOf(404, "Not Found")
-                func transformTupleToKotlinArray(node: TupleExprSyntax) -> TupleExprSyntax {
-                    SyntaxFactory.makeTupleExpr(
-                        leftParen: SyntaxFactory.makeIdentifier("arrayOf("),
-                        elementList: node.elementList,
-                        rightParen: SyntaxFactory.makeIdentifier(")")
-                    )
-                }
-
-                if isInitializerClause {
-                    if let identifierName = node.previousToken?.previousToken?.text {
-                        runtimeTypeTable[identifierName] = .array
-                        mutNode = transformTupleToKotlinArray(node: node)
+                let tokensString = node.tokens.map { $0.text }.joined()
+                
+                if tokensString.contains("?") {
+                    return super.visit(node)
+                } else {
+                    /// Example:
+                    /// let http404Error = (404, "Not Found")
+                    /// =>
+                    /// val http404Error = arrayOf(404, "Not Found")
+                    func transformTupleToKotlinArray(node: TupleExprSyntax) -> TupleExprSyntax {
+                        SyntaxFactory.makeTupleExpr(
+                            leftParen: SyntaxFactory.makeIdentifier("arrayOf("),
+                            elementList: node.elementList,
+                            rightParen: SyntaxFactory.makeIdentifier(")")
+                        )
                     }
-                }
 
-                return super.visit(mutNode)
+                    if isInitializerClause {
+                        if let identifierName = node.previousToken?.previousToken?.text {
+                            runtimeTypeTable[identifierName] = .array
+                            mutNode = transformTupleToKotlinArray(node: node)
+                        }
+                    }
+
+                    return super.visit(mutNode)
+                }
             }
         }
     }
@@ -320,11 +326,9 @@ final class KotlinCodeGenerator: SyntaxRewriter {
   
         // =>
         
-        //let a = true
-        //let b = 1000
-        //let c = 0
-        //
-        //let d = a ? b : c
+        //val a = true
+        //val b = 1000
+        //val c = 0
         //val d =  if (a) b else c
         
         let node = SyntaxFactory.makeTernaryExpr(
@@ -405,16 +409,20 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             case optional
         }
 
-        func makePatternBindingSyntax(
+        func makePatternBindingSyntax
+        (
             node: PatternBindingSyntax,
             type: PatternBindingSyntaxType
-        ) -> PatternBindingSyntax {
+        )
+        -> PatternBindingSyntax
+        {
             var expression: ExprSyntax!
+            
             switch type {
                 case .optional:
                     let variable = SyntaxFactory.makeVariableExpr("null")
                         .withLeadingTrivia(node.leadingTrivia ?? .spaces(0))
-                        .withTrailingTrivia(node.trailingTrivia ?? .spaces(0))
+                        .withTrailingTrivia(.spaces(1))
                     
                     expression = ExprSyntax(variable)
             }
@@ -422,7 +430,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             let equal = SyntaxFactory.makeEqualToken()
                 .withLeadingTrivia(.spaces(1))
                 .withTrailingTrivia(.spaces(1))
-            
+
             let initalizer = SyntaxFactory.makeInitializerClause(
                 equal: equal,
                 value: expression
@@ -435,12 +443,13 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                                                     trailingComma: node.trailingComma)
         }
 
+        print("isOptionalWithoutNilAssigned!")
         
-        let isOptionalWithoutNilAssigned = (
-            !recurScan(node: node.parent?.firstToken, forKeyword: "=", isBackward: false)
-            &&
-            recurScan(node: node.parent?.firstToken, forKeyword: "?", isBackward: false)
-        )
+        print("containsEqual!")
+        let containsEqual = !recurScan(node: node.parent?.firstToken, forKeyword: "=", isBackward: false)
+        print("containsQuestion!")
+        let containsQuestion = recurScan(node: node.parent?.firstToken, forKeyword: "?", isBackward: false)
+        let isOptionalWithoutNilAssigned = (containsEqual && containsQuestion)
 
         if isOptionalWithoutNilAssigned {
             // var convertedNumber: Int?
@@ -448,9 +457,11 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             // val convertedNumber: Int? = null
             
             let bindings = node.bindings
+                .withTrailingTrivia(.spaces(0))
                 .map { makePatternBindingSyntax(node:$0, type: .optional) }
             
-            mutNode = node.withBindings(SyntaxFactory.makePatternBindingList(bindings))
+            mutNode = node
+                .withBindings(SyntaxFactory.makePatternBindingList(bindings))
         }
         
         return super.visit(mutNode)
@@ -810,10 +821,14 @@ func recurScan(node: TokenSyntax?,
                forKeyword keyword: String,
                isBackward: Bool) -> Bool {
     ((node?.text ?? "" == keyword) ? true :
-        (node == nil ? false : recurScan(
-            node:(isBackward ? node?.previousToken : node?.nextToken),
-            forKeyword:keyword,
-            isBackward: isBackward)
+        ((node?.nextToken?.leadingTrivia.contains {
+            if case .newlines(_) = $0 { return true } else { return false }
+        } ?? false) ? false : (
+            (node == nil ? false : recurScan(
+                node:(isBackward ? node?.previousToken : node?.nextToken),
+                forKeyword:keyword,
+                isBackward: isBackward)
+            ))
         ))
 }
 
