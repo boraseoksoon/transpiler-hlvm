@@ -16,6 +16,24 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         // print("TokenSyntax : \(token)")
         return super.visit(token)
     }
+    
+    public override func visit(_ node: BinaryOperatorExprSyntax) -> ExprSyntax {
+        print("BinaryOperatorExprSyntax! : \(node)")
+        var mutNode = node
+        
+        if node.operatorToken.text == "..." {
+            print("closed range!")
+            mutNode = node.withOperatorToken(SyntaxFactory.makeIdentifier(".."))
+        }
+        
+//        else if node.operatorToken.text == "..<" {
+//            print("Half-Open Range Operator!")
+//            mutNode = node
+//                .withOperatorToken(SyntaxFactory.makeIdentifier(".."))
+//        }
+        
+        return super.visit(mutNode)
+    }
 
     public override func visit(_ node: OptionalBindingConditionSyntax) -> Syntax {
         print("OptionalBindingConditionSyntax : \(node)")
@@ -236,6 +254,10 @@ final class KotlinCodeGenerator: SyntaxRewriter {
         
         var mutNode = node
         
+        if node.name.text == "count" {
+            mutNode = node.withName(SyntaxFactory.makeIdentifier("count()"))
+        }
+        
         switch typeOf(node.base?.description ?? "") {
             case .dictionary:
                 // TODO: real, just done for test now
@@ -272,6 +294,7 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                     }
                 }
         }
+        
         return super.visit(mutNode)
     }
     
@@ -517,7 +540,10 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: ForInStmtSyntax) -> StmtSyntax {
         print("ForInStmtSyntax : \(node)")
-//
+        
+        // return super.visit(node)
+        
+
 //        print("node.labelName : \(node.labelName?.text)")
 //        print("node.labelColon : \(node.labelColon?.text)")
 //        print("node.forKeyword : \(node.forKeyword.text)")
@@ -529,12 +555,22 @@ final class KotlinCodeGenerator: SyntaxRewriter {
 //        print("node.whereClause : \(node.whereClause)")
 //        print("node.body : \(node.body)")
 
-        let expr = "\(node.sequenceExpr.description.trimmingCharacters(in: .whitespacesAndNewlines)))"
-        
         let forKeyword = SyntaxFactory
             .makeIdentifier("for (")
             .withLeadingTrivia(node.leadingTrivia ?? .newlines(0))
+
+        print("node.sequenceExpr.description : \(node.sequenceExpr.description)")
         
+        var sequenceExprDescription = node.sequenceExpr.description
+        if node.sequenceExpr.description.contains("..<") {
+            sequenceExprDescription = sequenceExprDescription.replacingOccurrences(of: "..<", with: "..")
+            sequenceExprDescription = sequenceExprDescription + "- 1" 
+        } else if node.sequenceExpr.description.contains("...") {
+            sequenceExprDescription = sequenceExprDescription.replacingOccurrences(of: "...", with: "..")
+        }
+        
+        let expr = "\(sequenceExprDescription.trimmingCharacters(in: .whitespacesAndNewlines))" + ")"
+ 
         let sequenceExpr = ExprSyntax(
             SyntaxFactory
                 .makeVariableExpr(expr)

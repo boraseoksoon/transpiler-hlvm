@@ -22,8 +22,8 @@
 6. Nil-Coalescing Operator [✅]
 
 7. Range Operators [❌]
-    - Closed Range Operator [❌]
-    - Half-Open Range Operator [❌]
+    - Closed Range Operator [✅]
+    - Half-Open Range Operator [✅]
     - One-Sided Ranges [❌]
     
 8. Logical Operators [❌]
