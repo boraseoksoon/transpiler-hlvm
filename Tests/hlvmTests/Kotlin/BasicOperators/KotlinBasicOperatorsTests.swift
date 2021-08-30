@@ -650,64 +650,18 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 99. TEST [❌]
-extension KotlinBasicOperatorsTests {
-    func testTemplate() throws {
-        let swiftSource = """
-        b
-        """
-
-        let kotlinSource = """
-        """
-
-        try isEqual(
-            swiftSource: swiftSource,
-            kotlinSource: kotlinSource
-        )
-    }
-}
-
-// func + print
-//func double(x: Int, y: Int) -> Int {
-//    return y * x
+//extension KotlinBasicOperatorsTests {
+//    func testTemplate() throws {
+//        let swiftSource = """
+//        b
+//        """
+//
+//        let kotlinSource = """
+//        """
+//
+//        try isEqual(
+//            swiftSource: swiftSource,
+//            kotlinSource: kotlinSource
+//        )
+//    }
 //}
-//
-//let x = 20
-//let y = 30
-//let result = double(x:x, y:y)
-//print("\\(x) * \\(y) : \\(result)")
-
-// array + for
-
-//let array: [Int] = [Int](arrayLiteral: 1,2,3)
-//let array2: [String] = [String](arrayLiteral: "a", "yo")
-//let array3 = [String](arrayLiteral: "a", "yo")
-//let array4 = [1,2,3]
-//let array5: [Int] = []
-//let array6 = [String]()
-//let array7: [Int] = [1,2,3]
-//let array9: [String] = ["a", "man"]
-//
-//print("\(array)\(array2)\(array3)\(array4)\(array5)\(array6)\(array7)\(array9)")
-
-// val array = arrayOf(1,2,3)
-
-//let array: [Int] = [Int](arrayLiteral: 1,2,3)
-//for element in array {
-//    print(element)
-//}
-
-//        let a = true
-//        let b = 1000
-//        let c = 0
-//
-//        let d = a ? b : c
-//        print("d is \\(d)")
-  
-        // =>
-        
-        //let a = true
-        //let b = 1000
-        //let c = 0
-        //
-        //let d = a ? b : c
-        //val d =  if (a) b else c
