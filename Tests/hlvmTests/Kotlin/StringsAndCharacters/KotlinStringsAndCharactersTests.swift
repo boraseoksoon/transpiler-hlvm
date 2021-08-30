@@ -35,6 +35,57 @@ final public class KotlinStringAndCharactersTests: XCTestCase {
     }
 }
 
+// MARK: - 1. String Literals [❌]
+extension KotlinStringAndCharactersTests {
+//    - Multiline String Literals  [❌]
+    func testMultilineStringLiterals() throws {
+        let swiftSource = """
+        x
+        """
+
+        let kotlinSource = """
+        """
+        
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    
+//    - Special Characters in String Literals [❌]
+    func testSpecialCharactersInStringLiterals() throws {
+        let swiftSource = """
+        b
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+    
+//    - Extended String Delimiters [❌]
+    func testExtendedStringDelimiters() throws {
+        let swiftSource = """
+        b
+        """
+
+        let kotlinSource = """
+        """
+
+        try isEqual(
+            swiftSource: swiftSource,
+            kotlinSource: kotlinSource
+        )
+    }
+}
+
+
+let someString = "Some string literal value"
+
 // MARK: - 99. TEST [❌]
 extension KotlinStringAndCharactersTests {
     func testTemplate() throws {
