@@ -9,15 +9,16 @@ import Foundation
 import SwiftSyntax
 
 final class CodeGenerator: SyntaxRewriter {
-    private let language: Language
+    private let destinationLanguage: Language
+    
     private let AST: SourceFileSyntax
     private let generator: SyntaxRewriter
     
-    init(from AST: SourceFileSyntax, for language: Language) {
-        self.language = language
+    init(from AST: SourceFileSyntax, to destinationLanguage: Language) {
+        self.destinationLanguage = destinationLanguage
         self.AST = AST
         
-        switch language {
+        switch destinationLanguage {
             case .kotlin:
                 generator = KotlinCodeGenerator()
             case .python:

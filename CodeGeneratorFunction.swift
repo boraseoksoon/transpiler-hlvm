@@ -60,12 +60,15 @@ func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
 func makeArray(startIndex: Int, endIndex: Int, isClosedRange: Bool = false) -> ExprSyntax {
     let array = (isClosedRange ? Array((startIndex..<endIndex)) : Array((startIndex...endIndex))).map {
         SyntaxFactory.makeArrayElement(
-          expression: ExprSyntax(
-            SyntaxFactory.makeIntegerLiteralExpr(
-              digits: SyntaxFactory.makeIntegerLiteral("\($0)")
+          expression: (
+            ExprSyntax(
+              SyntaxFactory.makeIntegerLiteralExpr(
+                digits: SyntaxFactory.makeIntegerLiteral("\($0)")
+              )
             )
           ),
-            trailingComma: $0 == endIndex ? nil : (SyntaxFactory.makeCommaToken(trailingTrivia: .spaces(1))
+          trailingComma: (
+            $0 == endIndex ? nil : (SyntaxFactory.makeCommaToken(trailingTrivia: .spaces(1)))
           )
         )
     }

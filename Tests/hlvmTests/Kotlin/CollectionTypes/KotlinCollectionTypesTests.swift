@@ -21,7 +21,7 @@ final public class KotlinCollectionTypesTests: XCTestCase {
     }
     
     func isEqual(swiftSource: String, kotlinSource: String) throws {
-        let code1 = transpile(input(source: swiftSource), to: language)
+        let code1 = transpile(input(source: swiftSource))
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
         let code2 = kotlinSource
@@ -44,7 +44,7 @@ extension KotlinCollectionTypesTests {
 
         let kotlinSource = """
         """
-
+        
         try isEqual(
             swiftSource: swiftSource,
             kotlinSource: kotlinSource

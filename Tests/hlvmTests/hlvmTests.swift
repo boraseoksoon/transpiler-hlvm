@@ -7,83 +7,119 @@
 
 import XCTest
 import class Foundation.Bundle
-import hlvm
+// @testable import hlvm
 
 final public class hlvmTests: XCTestCase {
-    private let language: Language = .kotlin
+    private let fromLanguage: Language = .swift
+    private let toLanguage: Language = .kotlin
     
     func input(source: String) -> String {
         """
-        \(language.rawValue) {
+        \(fromLanguage.rawValue) \(Symbol.to.rawValue) \(toLanguage.rawValue) {
             \(source)
         }
         """
     }
-    
-    func isEqual(swiftSource: String, kotlinSource: String) throws {
-        XCTAssertEqual(
-            transpile(input(source: swiftSource),
-                      to: Language.kotlin)
-                .trimmingCharacters(in: .whitespaces),
-            kotlinSource
-                .trimmingCharacters(in: .whitespaces)
-        )
-    }
 }
 
-// MARK: - 1. Constants and Variables
 extension hlvmTests {
-//    - Declaring Constants and Variables [✅]
-    func testConstantAndVariable() throws {
-        let swiftSource = """
-        let maximumNumberOfLoginAttempts = 10
-        var currentLoginAttempt = 0
+    func testIndent() throws {
+        let notIndentedHLVMSyntax = """
+        python {
+                        for i in [0,1,2,3,4] {
+        go {
+            go {
+        go {
+                go { fire { print(i) }}
+        }
+        }
+        }
+            }
+        }
         """
 
-        let kotlinSource = """
-        val maximumNumberOfLoginAttempts = 10
-        var currentLoginAttempt = 0
+        let indentedSource = """
+        for i in [0,1,2,3,4] {
+            go {
+                go {
+                    go {
+                        go { fire { print(i) }}
+                    }
+                }
+            }
+        }
         """
+        // =>
         
-        try isEqual(
-            swiftSource: swiftSource,
-            kotlinSource: kotlinSource
+        XCTAssertEqual(
+            indent(source: takeCode(from: notIndentedHLVMSyntax), indentType: .space4),
+            indentedSource
         )
     }
     
-//    - Type Annotations [✅]
-    func testTypeAnnotation() throws {
-        let swiftSource = """
-        var red, green, blue: Double
+    func testRecognizedLanguage() throws {
+        let code1 = """
+        python -> clojure {
+
+        }
         """
 
-        let kotlinSource = """
-        var red, green, blue: Double
-        """
-        
-        try isEqual(
-            swiftSource: swiftSource,
-            kotlinSource: kotlinSource
-        )
-    }
-    
-//    - Naming Constants and Variables [✅]
-    
-//    - Printing Constants and Variables [❌]
-    func testPrint() throws {
-        let swiftSource = """
-        print(friendlyWelcome)
-        print("The current value of friendlyWelcome is \\(friendlyWelcome)")
+        var (targetLanguage, destinationLanguage) = recognizeLanguage(from: code1)
+
+        XCTAssertEqual(targetLanguage, .python)
+        XCTAssertEqual(destinationLanguage, .clojure)
+
+        let code2 = """
+        java {
+
+        }
         """
 
-        let kotlinSource = """
-        print(friendlyWelcome)
-        print("The current value of friendlyWelcome is ${friendlyWelcome}")
+        (targetLanguage, destinationLanguage) = recognizeLanguage(from: code2)
+
+        XCTAssertEqual(targetLanguage, .swift)
+        XCTAssertEqual(destinationLanguage, .java)
+
+        let code3 = """
+        {
+                abc
+        }
         """
+
+        (targetLanguage, destinationLanguage) = recognizeLanguage(from: code3)
+
+        XCTAssertEqual(targetLanguage, .swift)
+        XCTAssertEqual(destinationLanguage, .unknown)
+
+
+        let code4 = """
+        """
+
+        (targetLanguage, destinationLanguage) = recognizeLanguage(from: code4)
+
+        XCTAssertEqual(targetLanguage, .swift)
+        XCTAssertEqual(destinationLanguage, .unknown)
+
+        let code5 = """
+        kotlin -> {
+
+        }
+        """
+
+        (targetLanguage, destinationLanguage) = recognizeLanguage(from: code5)
+
+        XCTAssertEqual(targetLanguage, .kotlin)
+        XCTAssertEqual(destinationLanguage, .unknown)
         
-        try isEqual(
-            swiftSource: swiftSource,
-            kotlinSource: kotlinSource
-        )
+        let code6 = """
+        -> {
+
+        }
+        """
+
+        (targetLanguage, destinationLanguage) = recognizeLanguage(from: code6)
+
+        XCTAssertEqual(targetLanguage, .unknown)
+        XCTAssertEqual(destinationLanguage, .unknown)
     }
 }

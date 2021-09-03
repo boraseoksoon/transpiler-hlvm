@@ -21,7 +21,7 @@ final public class KotlinStringAndCharactersTests: XCTestCase {
     }
     
     func isEqual(swiftSource: String, kotlinSource: String) throws {
-        let code1 = transpile(input(source: swiftSource), to: language)
+        let code1 = transpile(input(source: swiftSource))
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
         let code2 = kotlinSource

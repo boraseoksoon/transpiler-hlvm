@@ -8,28 +8,42 @@
 import Foundation
 import SwiftSyntax
 
-public func transpile(_ source: String, to language: Language? = nil) -> String {
-    guard let language = language == nil ? recognizeLanguage(from: source) : language
-        else { return source }
-    guard case let isValid = validCheck(source:source, for: language), isValid == true
-        else { return source }
-
-    let preprocessedSource = preprocess(source: source, for: language)
-    let (_, indentedSource) = indent(source: preprocessedSource, indentType: .space4)
-    let AST = try! SyntaxParser.parse(source: indentedSource)
-    let generatedCode = generateCode(from: AST, for: language)
+public func transpile(_ source: String) -> String {
+    let (targetLanguage, destinationLanguage) = recognizeLanguage(from: source)
+    
+    let generatedCode = generateCode(source: source,
+                                     from: targetLanguage,
+                                     to: destinationLanguage)
     
     return generatedCode
 }
 
-public func generateCode(from AST: SourceFileSyntax, for language: Language) -> String {
-    finalize(
-        source: CodeGenerator(from: AST, for: language).generate(),
-        for: language
+public func generateCode(source: String,
+                         from targetLanguage: Language,
+                         to destinationLanguage: Language) -> String {
+    guard isValid(source:source, for: targetLanguage)
+        else { return source }
+
+    var generatedCode = source
+    let preprocessedSource = preprocess(source: source, for: destinationLanguage)
+    let pureCode = takeCode(from:preprocessedSource)
+    let indentedSource = indent(source: pureCode, indentType: .space4)
+
+    switch targetLanguage {
+        case .swift:
+            let swiftAST = try! SyntaxParser.parse(source: indentedSource)
+            generatedCode = CodeGenerator(from: swiftAST, to: destinationLanguage).generate()
+        default:
+            fatalError("targetLanguage : \(targetLanguage), destinationLanguage : \(destinationLanguage), other than swift, all transpilers are being implemented.")
+    }
+    
+    return finalize(
+        source: generatedCode,
+        for: destinationLanguage
     )
 }
 
-public func validCheck(source: String, for language: Language) -> Bool {
+public func isValid(source: String, for language: Language) -> Bool {
     true
 }
 

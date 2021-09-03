@@ -14,5 +14,6 @@ public enum Language: String {
     case clojure
     case javascript
     case kotlin
+    case java
     case unknown
 }

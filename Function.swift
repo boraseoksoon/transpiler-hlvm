@@ -7,6 +7,8 @@
 
 import Foundation
 
+// indent ex:
+
 //let source = """
 //python {
 //                for i in [0,1,2,3,4] {
@@ -21,25 +23,27 @@ import Foundation
 //}
 //"""
 
+
 //let (language, indentedSource) = indent(source: source)
 //
 //print(language)
 //print(indentedSource)
 
-//python
-//for i in [0,1,2,3,4] {
-//    go {
+// =>
+
+//    for i in [0,1,2,3,4] {
 //        go {
 //            go {
-//                go { fire { print(i) }}
+//                go {
+//                    go { fire { print(i) }}
+//                }
 //            }
 //        }
 //    }
-//}
 
 // TODO: due to indent type, it may be possible for isEqual code test to fail.
-func indent(source: String,
-            indentType: IndentationType = .tab) -> (Language, String) {
+public func indent(source: String,
+                   indentType: IndentationType = .tab) -> String {
     func recurIndent(lines: [String],
                      index: Int = 0,
                      indentType: IndentationType,
@@ -112,100 +116,94 @@ func indent(source: String,
         )
     }
 
-    func hasPairBracket(
-        string: String,
-        index: Int = 0,
-        leftBrackets: [Character] = [],
-        rightBrackets: [Character] = []
-    ) -> Bool
-    {
-        let leftBracket: Character = "{"
-        let rightBracket: Character = "}"
-        
-        guard string.contains(leftBracket) && string.contains(rightBracket)
-            else { return false }
-        
-        guard string.count - 1 >= index
-            else {
-                return leftBrackets.count == rightBrackets.count ? true : false
-            }
-        
-        let stringIndex = string.index(string.startIndex, offsetBy: index)
-        let currentChar = string[stringIndex]
-        
-        var leftBrackets = leftBrackets
-        var rightBrackets = rightBrackets
+    let lines = source.components(separatedBy: "\n")
+    let res = recurIndent(lines: lines,
+                          indentType: indentType)
+        .joined(separator: "\n")
+    
+    return res
+}
 
-        if currentChar == leftBracket {
-            leftBrackets.append(currentChar)
-        } else if currentChar == rightBracket {
-            rightBrackets.append(currentChar)
+public func takeCode(from hlvmSyntax: String) -> String {
+    Array((hlvmSyntax
+            .components(separatedBy: "\n")
+            .dropFirst()
+            .dropLast()))
+        .joined(separator: "\n")
+}
+
+public func recognizeLanguage(from source: String) -> (Language, Language) {
+    guard case let lines = source.components(separatedBy: "\n"),
+          let firstLine = lines.first, let lastLine = lines.last,
+          case let trimmedFirstLine = firstLine.trimmingCharacters(in: .whitespacesAndNewlines),
+          trimmedFirstLine.hasSuffix("{"), trimmedFirstLine.dropLast().last == " ",
+          case let trimmedLastLine = lastLine.trimmingCharacters(in: .whitespacesAndNewlines),
+          trimmedLastLine.hasSuffix("}"), trimmedLastLine.count == 1
+        else { return (.swift, .unknown) }
+    
+    let languageNames = firstLine
+        .components(separatedBy: Symbol.to.rawValue)
+        .map {
+            Language(rawValue: $0
+                        .trimmingCharacters(in: .alphanumerics.inverted)
+                        .lowercased()) ?? .unknown
         }
+    
+    let (targetLanguage, destinationLanguage) = (
+        firstLine.contains(Symbol.to.rawValue) ?
+        (languageNames.first ?? .swift, languageNames.last ?? .unknown) :
+        (.swift, languageNames.first ?? .unknown)
+    )
+    
+    return (targetLanguage, destinationLanguage)
+}
 
-        return hasPairBracket(
-            string: string,
-            index: index+1,
-            leftBrackets: leftBrackets,
-            rightBrackets: rightBrackets
-        )
+public func hasPairBracket(
+    string: String,
+    index: Int = 0,
+    leftBrackets: [Character] = [],
+    rightBrackets: [Character] = []
+) -> Bool
+{
+    let leftBracket: Character = "{"
+    let rightBracket: Character = "}"
+    
+    guard string.contains(leftBracket) && string.contains(rightBracket)
+        else { return false }
+    
+    guard string.count - 1 >= index
+        else {
+            return leftBrackets.count == rightBrackets.count ? true : false
+        }
+    
+    let stringIndex = string.index(string.startIndex, offsetBy: index)
+    let currentChar = string[stringIndex]
+    
+    var leftBrackets = leftBrackets
+    var rightBrackets = rightBrackets
+
+    if currentChar == leftBracket {
+        leftBrackets.append(currentChar)
+    } else if currentChar == rightBracket {
+        rightBrackets.append(currentChar)
     }
 
-    func takeCode(from source: String) -> String {
-        .unknown == recognizeLanguage(from: source) ? source :
-            (source
-                .components(separatedBy: "\n")
-                .dropFirst()
-                .dropLast()
-                .joined(separator: "\n"))
-    }
-
-    // TODO: if hasPairBracket failed, We need to report this fact to users
-    // rather than just trying and returning a given incomplete source
-    
-//    guard hasPairBracket(string: source) else {
-//        return (.unknown, source)
-//    }
-    
-    let lines = takeCode(from: source)
-        .components(separatedBy: "\n")
-    
-    return (
-        recognizeLanguage(from: source),
-        recurIndent(lines: lines, indentType: indentType)
-            .joined(separator: "\n")
+    return hasPairBracket(
+        string: string,
+        index: index+1,
+        leftBrackets: leftBrackets,
+        rightBrackets: rightBrackets
     )
 }
 
-func recognizeLanguage(from source: String) -> Language {
-    let lines = source.components(separatedBy: "\n")
-    guard let firstLine = lines.first, let lastLine = lines.last
-        else { return .unknown }
-    
-    let trimmedFirstLine = firstLine.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard trimmedFirstLine.hasSuffix("{"), trimmedFirstLine.dropLast().last == " "
-        else { return .unknown }
-    
-    let trimmedLastLine = lastLine.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard trimmedLastLine.hasSuffix("}"), trimmedLastLine.count == 1
-        else { return .unknown }
-    
-    let languageName = firstLine
-        .trimmingCharacters(in: .alphanumerics.inverted)
-        .lowercased()
-    
-    let language = Language(rawValue: languageName)
-    
-    return language == nil ? .unknown : language!
-}
-
-enum IndentationType: String {
+public enum IndentationType: String {
     case tab = "\t"
     case space2 = "  "
     case space4 = "    "
     case test = "!"
 }
 
-enum Bracket: Character {
+public enum Bracket: Character {
     case leftCurly = "{"
     case rigthCurly = "}"
 }
