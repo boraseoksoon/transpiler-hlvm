@@ -10,12 +10,27 @@ import SwiftSyntax
 
 public func transpile(_ source: String) -> String {
     let (targetLanguage, destinationLanguage) = recognizeLanguage(from: source)
+
+    let preprocessedSource = preprocess(source: source, for: destinationLanguage)
+    let pureCode = takeCode(from:preprocessedSource)
+    let indentedSource = indent(source: pureCode, indentType: .space4)
     
-    let generatedCode = generateCode(source: source,
+    let generatedCode = generateCode(source: indentedSource,
                                      from: targetLanguage,
                                      to: destinationLanguage)
     
     return generatedCode
+}
+
+public typealias KotlinAST = SourceFileSyntax
+public func kotlinAST(from source: String) -> KotlinAST {
+    // TODO:
+    // 3rd party lex + parser
+    
+//            let tokens = try! lex(language: .kotlin, source:indentedSource)
+//            let kotlinAST = parse(language: .kotlin, tokens: tokens)
+    
+    return try! SyntaxParser.parse(source: source)
 }
 
 public func generateCode(source: String,
@@ -23,24 +38,36 @@ public func generateCode(source: String,
                          to destinationLanguage: Language) -> String {
     guard isValid(source:source, for: targetLanguage)
         else { return source }
-
-    var generatedCode = source
-    let preprocessedSource = preprocess(source: source, for: destinationLanguage)
-    let pureCode = takeCode(from:preprocessedSource)
-    let indentedSource = indent(source: pureCode, indentType: .space4)
-
+    print("targetLanguage : \(targetLanguage), destinationLanguage : \(destinationLanguage)")
+    
     switch targetLanguage {
         case .swift:
-            let swiftAST = try! SyntaxParser.parse(source: indentedSource)
-            generatedCode = CodeGenerator(from: swiftAST, to: destinationLanguage).generate()
+            let swiftAST = try! SyntaxParser.parse(source: source)
+            let generatedCode = CodeGenerator(from: swiftAST, to: destinationLanguage).generate()
+            
+            return finalize(
+                source: generatedCode,
+                for: destinationLanguage
+            )
+            
+        case .kotlin:
+            let kotlinAST = kotlinAST(from: source)
+            if destinationLanguage == .swift {
+                print("hey1")
+                return finalize(
+                    source: source,
+                    for: .swift
+                )
+            } else {
+                print("hey2")
+                let swiftCode = CodeGenerator(from: kotlinAST, to: .swift).generate()
+                return generateCode(source: swiftCode,
+                                    from: .swift,
+                                    to: destinationLanguage)
+            }
         default:
             fatalError("targetLanguage : \(targetLanguage), destinationLanguage : \(destinationLanguage), other than swift, all transpilers are being implemented.")
     }
-    
-    return finalize(
-        source: generatedCode,
-        for: destinationLanguage
-    )
 }
 
 public func isValid(source: String, for language: Language) -> Bool {

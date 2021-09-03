@@ -9,9 +9,8 @@ import Foundation
 import SwiftSyntax
 
 let source = """
-python {
-    let name = "JSS"
-    print("hey : \\(name)")
+kotlin {
+    val name = ""
 }
 """
 

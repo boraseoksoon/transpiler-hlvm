@@ -30,7 +30,8 @@ final class CodeGenerator: SyntaxRewriter {
             case .scala:
                 fatalError("Unsupported language to transpile!")
             case .swift:
-                fatalError("Unsupported language to transpile!")
+                // fatalError("destination Swift is unsupported language in CodeGenerator!")
+                generator = KotlinCodeGenerator()
             case .unknown:
                 fatalError("Unsupported language to transpile!")
             default:
