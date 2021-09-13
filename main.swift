@@ -6,15 +6,15 @@
 //
 
 import Foundation
-import SwiftSyntax
 
-let source = """
+let HLVM_IR = """
 kotlin {
-    val name = ""
+    let numbers = [6, 5, 3, 8, 4, 2, 5, 4,
+    print("numbers : \\(numbers)")
 }
 """
 
-let code = transpile(source)
+let code = transpile(HLVM_IR)
 
 print("*********************")
 print("** code generation **")

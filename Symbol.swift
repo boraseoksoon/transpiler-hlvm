@@ -8,5 +8,5 @@
 import Foundation
 
 public enum Symbol: String {
-    case to = "~>"
+    case toArrow = "->"
 }

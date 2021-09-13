@@ -15,7 +15,7 @@ final public class hlvmTests: XCTestCase {
     
     func input(source: String) -> String {
         """
-        \(fromLanguage.rawValue) \(Symbol.to.rawValue) \(toLanguage.rawValue) {
+        \(fromLanguage.rawValue) \(Symbol.toArrow.rawValue) \(toLanguage.rawValue) {
             \(source)
         }
         """
@@ -55,6 +55,50 @@ extension hlvmTests {
             indent(source: takeCode(from: notIndentedHLVMSyntax), indentType: .space4),
             indentedSource
         )
+    }
+    
+    func testTranspilePipeline() throws {
+        let code1 = """
+        python -> kotlin {
+            numbers = [6, 5, 3, 8, 4, 2, 5, 4,
+            print(f"numbers : {numbers}")
+        }
+        """
+        
+        let generatedCode1 = transpile(code1)
+
+        let expectation1 = """
+        val numbers = [6, 5, 3, 8, 4, 2, 5, 4,
+        print("numbers : ${numbers}")
+        """
+        "
+//        let code1 = """
+//        python -> kotlin {
+//            numbers = [6, 5, 3, 8, 4, 2, 5, 4, 11]
+//            sum = 0
+//
+//            for num in numbers:
+//                sum = sum+num
+//
+//            print(sum)
+//        }
+//        """
+//
+//        let generatedCode1 = transpile(code1)
+//
+//        let expectation1 = """
+//        val numbers = arrayOf(6, 5, 3, 8, 4, 2, 5, 4, 11)
+//        var sum = 0
+//
+//        for (val in numbers) {
+//            sum = sum+val
+//        }
+//
+//        print(sum)
+//        """
+        
+        XCTAssertEqual(expectation1, generatedCode1)
+        
     }
     
     func testRecognizedLanguage() throws {

@@ -22,17 +22,6 @@ public func transpile(_ source: String) -> String {
     return generatedCode
 }
 
-public typealias KotlinAST = SourceFileSyntax
-public func kotlinAST(from source: String) -> KotlinAST {
-    // TODO:
-    // 3rd party lex + parser
-    
-//            let tokens = try! lex(language: .kotlin, source:indentedSource)
-//            let kotlinAST = parse(language: .kotlin, tokens: tokens)
-    
-    return try! SyntaxParser.parse(source: source)
-}
-
 public func generateCode(source: String,
                          from targetLanguage: Language,
                          to destinationLanguage: Language) -> String {
@@ -44,7 +33,6 @@ public func generateCode(source: String,
         case .swift:
             let swiftAST = try! SyntaxParser.parse(source: source)
             let generatedCode = CodeGenerator(from: swiftAST, to: destinationLanguage).generate()
-            
             return finalize(
                 source: generatedCode,
                 for: destinationLanguage
@@ -53,14 +41,25 @@ public func generateCode(source: String,
         case .kotlin:
             let kotlinAST = kotlinAST(from: source)
             if destinationLanguage == .swift {
-                print("hey1")
                 return finalize(
                     source: source,
                     for: .swift
                 )
             } else {
-                print("hey2")
                 let swiftCode = CodeGenerator(from: kotlinAST, to: .swift).generate()
+                return generateCode(source: swiftCode,
+                                    from: .swift,
+                                    to: destinationLanguage)
+            }
+        case .python:
+            let pythonAST = pythonAST(from: source)
+            if destinationLanguage == .swift {
+                return finalize(
+                    source: source,
+                    for: .swift
+                )
+            } else {
+                let swiftCode = CodeGenerator(from: pythonAST, to: .swift).generate()
                 return generateCode(source: swiftCode,
                                     from: .swift,
                                     to: destinationLanguage)
@@ -118,3 +117,14 @@ public func finalize(source: String, for language: Language) -> String {
     }
 }
 
+// TODO: Remove
+public typealias KotlinAST = SourceFileSyntax
+public func kotlinAST(from source: String) -> KotlinAST {
+    return try! SyntaxParser.parse(source: source)
+}
+
+// TODO: Remove
+public typealias PythonAST = SourceFileSyntax
+public func pythonAST(from source: String) -> PythonAST {
+    return try! SyntaxParser.parse(source: source)
+}

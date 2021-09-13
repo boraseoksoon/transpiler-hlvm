@@ -23,7 +23,6 @@ import Foundation
 //}
 //"""
 
-
 //let (language, indentedSource) = indent(source: source)
 //
 //print(language)
@@ -142,7 +141,7 @@ public func recognizeLanguage(from source: String) -> (Language, Language) {
         else { return (.swift, .unknown) }
     
     let languageNames = firstLine
-        .components(separatedBy: Symbol.to.rawValue)
+        .components(separatedBy: Symbol.toArrow.rawValue)
         .map {
             Language(rawValue: $0
                         .trimmingCharacters(in: .alphanumerics.inverted)
@@ -150,7 +149,7 @@ public func recognizeLanguage(from source: String) -> (Language, Language) {
         }
     
     let (targetLanguage, destinationLanguage) = (
-        firstLine.contains(Symbol.to.rawValue) ?
+        firstLine.contains(Symbol.toArrow.rawValue) ?
         (languageNames.first ?? .swift, languageNames.last ?? .unknown) :
         (.swift, languageNames.first ?? .unknown)
     )
