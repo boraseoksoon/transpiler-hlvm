@@ -8,9 +8,9 @@
 import Foundation
 
 let HLVM_IR = """
-kotlin {
-    let numbers = [6, 5, 3, 8, 4, 2, 5, 4,
-    print("numbers : \\(numbers)")
+javascript {
+    let sequence = [6, 5, 3, 8, 4, 2, 5, 4]
+    print("sequence : \\(sequence)")
 }
 """
 

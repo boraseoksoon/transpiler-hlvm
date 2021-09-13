@@ -26,7 +26,7 @@ final class CodeGenerator: SyntaxRewriter {
             case .clojure:
                 fatalError("Unsupported language to transpile!")
             case .javascript:
-                fatalError("Unsupported language to transpile!")
+                generator = JavascriptCodeGenerator()
             case .scala:
                 fatalError("Unsupported language to transpile!")
             case .swift:

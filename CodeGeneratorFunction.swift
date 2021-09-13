@@ -8,6 +8,11 @@
 import Foundation
 import SwiftSyntax
 
+
+public func isValid(source: String, for language: Language) -> Bool {
+    true
+}
+
 func generateSyntax(from token: TokenSyntax, to language: Language) -> TokenSyntax {
 //    print("generated token : \(token)")
 //    print("generated token.tokenKind : \(token.tokenKind)")
@@ -18,13 +23,21 @@ func generateSyntax(from token: TokenSyntax, to language: Language) -> TokenSynt
             return generatePythonSyntax(from: token)
         case .kotlin:
             return generateKotlinSyntax(from: token)
+        case .javascript:
+            return generateJavascriptSyntax(from: token)
         default:
             fatalError("\(language) is not implemented for code generation")
     }
 }
 
+func generateJavascriptSyntax(from token: TokenSyntax) -> TokenSyntax {
+    // token.withKind(.stringLiteral("javascript"))
+    return token
+}
+
 func generateKotlinSyntax(from token: TokenSyntax) -> TokenSyntax {
-    token.withKind(.stringLiteral("kotlin"))
+    // token.withKind(.stringLiteral("kotlin"))
+    return token
 }
 
 func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {

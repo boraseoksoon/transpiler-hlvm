@@ -64,57 +64,29 @@ public func generateCode(source: String,
                                     from: .swift,
                                     to: destinationLanguage)
             }
+        case .javascript:
+            let javascriptAST = javascriptAST(from: source)
+            if destinationLanguage == .swift {
+                return finalize(
+                    source: source,
+                    for: .swift
+                )
+            } else {
+                let swiftCode = CodeGenerator(from: javascriptAST, to: .swift).generate()
+                return generateCode(source: swiftCode,
+                                    from: .swift,
+                                    to: destinationLanguage)
+            }
         default:
             fatalError("targetLanguage : \(targetLanguage), destinationLanguage : \(destinationLanguage), other than swift, all transpilers are being implemented.")
     }
 }
 
-public func isValid(source: String, for language: Language) -> Bool {
-    true
-}
 
-public func preprocess(source: String, for language: Language) -> String {
-    // WARN: Code generation based on AST will not work properly if syntax is replaced ahead of time
-    switch language {
-        case .kotlin:
-        return source
-        case .python:
-            return source
-        default:
-            return source
-    }
-}
-
-// TODO: SHOULD NOT BE USED, JUST FOR PROTOTYPING. LET'S SAY print("let is good!")
-public func finalize(source: String, for language: Language) -> String {
-    switch language {
-        case .kotlin:
-            return source
-                .replacingOccurrences(of: "var", with: "var")
-                .replacingOccurrences(of: "let", with: "val")
-                .replacingOccurrences(of: "init", with: "constructor")
-                .replacingOccurrences(of: "self", with: "this")
-                .replacingOccurrences(of: "->", with: ":")
-                .replacingOccurrences(of: "??", with: "?:")
-                .replacingOccurrences(of: "func", with: "fun")
-                .replacingOccurrences(of: "protocol", with: "interface")
-                .replacingOccurrences(of: "nil", with: "null")
-                .replacingOccurrences(of: "@objc", with: "")
-                .replacingOccurrences(of: "@objcMembers", with: "")
-                .replacingOccurrences(of: "AnyClass", with: "Any")
-                .replacingOccurrences(of: "AnyClass", with: "Any")
-                
-        case .python:
-            return source
-                .replacingOccurrences(of: "print(\"", with: "print(f\"")
-                .replacingOccurrences(of: "else if", with: "elif")
-                .replacingOccurrences(of: "true", with: "True")
-                .replacingOccurrences(of: "false", with: "False")
-//                .replacingOccurrences(of: "let", with: "")
-//                .replacingOccurrences(of: "var", with: "")
-        default:
-            return source
-    }
+// TODO: Remove
+public typealias JavascriptAST = SourceFileSyntax
+public func javascriptAST(from source: String) -> JavascriptAST {
+    return try! SyntaxParser.parse(source: source)
 }
 
 // TODO: Remove
