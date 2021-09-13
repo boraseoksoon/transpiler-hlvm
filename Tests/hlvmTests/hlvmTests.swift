@@ -7,7 +7,6 @@
 
 import XCTest
 import class Foundation.Bundle
-// @testable import hlvm
 
 final public class hlvmTests: XCTestCase {
     private let fromLanguage: Language = .swift
@@ -71,32 +70,7 @@ extension hlvmTests {
         val numbers = [6, 5, 3, 8, 4, 2, 5, 4,
         print("numbers : ${numbers}")
         """
-        "
-//        let code1 = """
-//        python -> kotlin {
-//            numbers = [6, 5, 3, 8, 4, 2, 5, 4, 11]
-//            sum = 0
-//
-//            for num in numbers:
-//                sum = sum+num
-//
-//            print(sum)
-//        }
-//        """
-//
-//        let generatedCode1 = transpile(code1)
-//
-//        let expectation1 = """
-//        val numbers = arrayOf(6, 5, 3, 8, 4, 2, 5, 4, 11)
-//        var sum = 0
-//
-//        for (val in numbers) {
-//            sum = sum+val
-//        }
-//
-//        print(sum)
-//        """
-        
+
         XCTAssertEqual(expectation1, generatedCode1)
         
     }

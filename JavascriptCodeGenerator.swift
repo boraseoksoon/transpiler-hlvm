@@ -18,6 +18,6 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
     
     public override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
         return super.visit(node)
-    }    
+    }
 }
 

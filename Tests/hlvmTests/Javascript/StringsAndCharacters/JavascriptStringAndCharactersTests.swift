@@ -1,5 +1,5 @@
 //
-//  KotlinStringsAndCharactersTests.swift
+//  JavascriptStringAndCharactersTests.swift
 //  hlvm
 //
 //  Created by Seoksoon Jang on 2021/08/29.
@@ -7,7 +7,6 @@
 
 import XCTest
 import class Foundation.Bundle
-import hlvm
 
 final public class JavascriptStringAndCharactersTests: XCTestCase {
     private let language: Language = .javascript
@@ -20,11 +19,11 @@ final public class JavascriptStringAndCharactersTests: XCTestCase {
         """
     }
     
-    func isEqual(swiftSource: String, kotlinSource: String) throws {
+    func isEqual(swiftSource: String, javascriptSource: String) throws {
         let code1 = transpile(input(source: swiftSource))
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
-        let code2 = kotlinSource
+        let code2 = javascriptSource
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
         print(code1)
@@ -36,7 +35,7 @@ final public class JavascriptStringAndCharactersTests: XCTestCase {
 }
 
 // MARK: - 1. String Literals [❌]
-extension KotlinStringAndCharactersTests {
+extension JavascriptStringAndCharactersTests {
 //    - Multiline String Literals  [❌]
     func testMultilineStringLiterals() throws {
         let swiftSource = """
@@ -48,7 +47,7 @@ extension KotlinStringAndCharactersTests {
         
         try isEqual(
             swiftSource: swiftSource,
-            kotlinSource: kotlinSource
+            javascriptSource: javascriptSource
         )
     }
     
@@ -63,7 +62,7 @@ extension KotlinStringAndCharactersTests {
 
         try isEqual(
             swiftSource: swiftSource,
-            kotlinSource: kotlinSource
+            javascriptSource: javascriptSource
         )
     }
     
@@ -78,16 +77,13 @@ extension KotlinStringAndCharactersTests {
 
         try isEqual(
             swiftSource: swiftSource,
-            kotlinSource: kotlinSource
+            javascriptSource: javascriptSource
         )
     }
 }
 
-
-let someString = "Some string literal value"
-
 // MARK: - 99. TEST [❌]
-extension KotlinStringAndCharactersTests {
+extension JavascriptStringAndCharactersTests {
     func testTemplate() throws {
         let swiftSource = """
         b
@@ -98,7 +94,7 @@ extension KotlinStringAndCharactersTests {
 
         try isEqual(
             swiftSource: swiftSource,
-            kotlinSource: kotlinSource
+            javascriptSource: javascriptSource
         )
     }
 }

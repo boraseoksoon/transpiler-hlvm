@@ -7,7 +7,6 @@
 
 import XCTest
 import class Foundation.Bundle
-import hlvm
 
 final public class JavascriptBasicOperatorsTests: XCTestCase {
     private let language: Language = .javascript
@@ -36,7 +35,7 @@ final public class JavascriptBasicOperatorsTests: XCTestCase {
 }
 
 // MARK: - 1. Assignment Operator [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
     func testAssignmentOperator() throws {
         let swiftSource = """
         let b = 10
@@ -63,7 +62,7 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 2. Arithmetic Operators [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
     // - Addition (+)  [❌]
     func testAddition() throws {
         let swiftSource = """
@@ -169,7 +168,7 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 3. Compound Assignment Operators [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
     func testCompoundAssignmentOperators() throws {
         let swiftSource = """
         var a = 1
@@ -187,7 +186,7 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 4. Comparison Operators [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
     func testComparisonOperators() throws {
         let swiftSource = """
         1 == 1   // true because 1 is equal to 1
@@ -224,7 +223,7 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 5. Ternary Conditional Operator [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
     func testTernaryConditionalOperator() throws {
         let swiftSource = """
         let question = false
@@ -259,7 +258,7 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 6. Nil-Coalescing Operator [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
     func testNilCoalescingOperator() throws {
         let swiftSource = """
         let defaultColorName = "red"
@@ -284,7 +283,7 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 7. Range Operators [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
     // - Closed Range Operator [❌]
     func testClosedRangeOperator() throws {
         let swiftSource = """
@@ -374,7 +373,7 @@ extension KotlinBasicOperatorsTests {
 }
 
 // MARK: - 8. Logical Operators [❌]
-extension KotlinBasicOperatorsTests {
+extension JavascriptBasicOperatorsTests {
 //    - Logical NOT (!a) [❌]
     func testLogicalNOT() throws {
         let swiftSource = """

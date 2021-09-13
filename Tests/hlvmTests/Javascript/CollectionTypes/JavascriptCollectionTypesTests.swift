@@ -7,7 +7,6 @@
 
 import XCTest
 import class Foundation.Bundle
-import hlvm
 
 final public class JavascriptCollectionTypesTests: XCTestCase {
     private let language: Language = .javascript
@@ -20,11 +19,11 @@ final public class JavascriptCollectionTypesTests: XCTestCase {
         """
     }
     
-    func isEqual(swiftSource: String, kotlinSource: String) throws {
+    func isEqual(swiftSource: String, javascriptSource: String) throws {
         let code1 = transpile(input(source: swiftSource))
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
-        let code2 = kotlinSource
+        let code2 = javascriptSource
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
         print(code1)
@@ -36,18 +35,18 @@ final public class JavascriptCollectionTypesTests: XCTestCase {
 }
 
 // MARK: - 99. TEST [❌]
-extension KotlinCollectionTypesTests {
+extension JavascriptCollectionTypesTests {
     func testTemplate() throws {
         let swiftSource = """
         b
         """
 
-        let kotlinSource = """
+        let javascriptSource = """
         """
         
         try isEqual(
             swiftSource: swiftSource,
-            kotlinSource: kotlinSource
+            javascriptSource: javascriptSource
         )
     }
 }
