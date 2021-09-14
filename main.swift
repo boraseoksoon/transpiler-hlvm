@@ -9,8 +9,8 @@ import Foundation
 
 let HLVM_IR = """
 javascript {
-    let sequence = [6, 5, 3, 8, 4, 2, 5, 4]
-    print("sequence : \\(sequence)")
+    let possibleNumber = 20
+    print("The string \\(possibleNumber)")
 }
 """
 

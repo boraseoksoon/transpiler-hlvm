@@ -38,17 +38,14 @@ final public class KotlinTheBasicTests: XCTestCase {
 // MARK: - 0. Edge cases [❌]
 extension KotlinTheBasicTests {
     func testSwiftSyntaxBug() throws {
-        /// Possibly, SwiftSyntax bug?
-        /// when escape character is used with tuple expression in print,
-        /// node root is not divided line by line but token is linked all the way
-        /// up uptil the top of source
-        /// (here => let)
         let swiftSource = """
         let possibleNumber = 20
-        print("The string \"\\(possibleNumber)\"")
+        print("The string \\(possibleNumber)")
         """
 
         let kotlinSource = """
+        val possibleNumber = 20
+        print("The string ${possibleNumber}")
         """
         
         try isEqual(
@@ -59,11 +56,11 @@ extension KotlinTheBasicTests {
     
     func testEscapeCharacter() throws {
         let swiftSource = """
-        print("The string \" \\(possibleNumber)\"")
+        print("The string \\(possibleNumber)")
         """
 
         let kotlinSource = """
-        print("The string \"${possibleNumber}\"")
+        print("The string ${possibleNumber}")
         """
         
         try isEqual(

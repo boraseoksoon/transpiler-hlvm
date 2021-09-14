@@ -44,10 +44,12 @@ extension JavascriptTheBasicTests {
         /// (here => let)
         let swiftSource = """
         let possibleNumber = 20
-        print("The string \"\\(possibleNumber)\"")
+        print("The string \\(possibleNumber)")
         """
 
         let javascriptSource = """
+        const possibleNumber = 20
+        console.log(`The string ${possibleNumber}`)
         """
         
         try isEqual(
@@ -58,10 +60,11 @@ extension JavascriptTheBasicTests {
     
     func testEscapeCharacter() throws {
         let swiftSource = """
-        print("The string \" \\(possibleNumber)\"")
+        print("The string \\(possibleNumber)")
         """
 
         let javascriptSource = """
+        console.log(`The string ${possibleNumber}`)
         """
         
         try isEqual(
