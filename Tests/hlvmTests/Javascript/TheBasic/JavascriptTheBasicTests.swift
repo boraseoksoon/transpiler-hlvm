@@ -34,7 +34,7 @@ final public class JavascriptTheBasicTests: XCTestCase {
     }
 }
 
-// MARK: - 0. Edge cases [❌]
+// MARK: - 0. Edge cases [✅]
 extension JavascriptTheBasicTests {
     func testSwiftSyntaxBug() throws {
         /// Possibly, SwiftSyntax bug?
@@ -74,9 +74,9 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 1. Constants and Variables [❌]
+// MARK: - 1. Constants and Variables [✅]
 extension JavascriptTheBasicTests {
-    //    - Declaring Constants and Variables [❌]
+    //    - Declaring Constants and Variables [✅]
     func testConstantAndVariable() throws {
         let swiftSource = """
         let maximumNumberOfLoginAttempts = 10
@@ -84,6 +84,8 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        const maximumNumberOfLoginAttempts = 10
+        let currentLoginAttempt = 0
         """
         
         try isEqual(
@@ -92,13 +94,14 @@ extension JavascriptTheBasicTests {
         )
     }
     
-    //    - Type Annotations [❌]
+    //    - Type Annotations [✅]
     func testTypeAnnotation() throws {
         let swiftSource = """
         var red, green, blue: Double
         """
 
         let javascriptSource = """
+        let red, green, blue;
         """
         
         try isEqual(
@@ -107,15 +110,22 @@ extension JavascriptTheBasicTests {
         )
     }
     
-    //    - Naming Constants and Variables [❌]
+    //    - Naming Constants and Variables [✅]
     func testNamingConstantsAndVariables() throws {
         let swiftSource = """
         let π = 3.14159
         let 你好 = "你好世界"
-        let 🐶🐮 = "dogcow"
+        // note that in JS, emoji cannot be used as variable name.
+        // need to give it exception
+        // let 🐶🐮 = "dogcow"
         """
 
         let javascriptSource = """
+        const π = 3.14159
+        const 你好 = `你好世界`
+        // note that in JS, emoji cannot be used as letiable name.
+        // need to give it exception
+        // const 🐶🐮 = `dogcow`
         """
         
         try isEqual(
@@ -124,7 +134,7 @@ extension JavascriptTheBasicTests {
         )
     }
     
-    //    - Printing Constants and Variables [❌]
+    //    - Printing Constants and Variables [✅]
     func testPrint() throws {
         let swiftSource = """
         print(friendlyWelcome)
@@ -132,6 +142,8 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        console.log(friendlyWelcome)
+        console.log(`The current value of friendlyWelcome is ${friendlyWelcome}`)
         """
         
         try isEqual(
@@ -141,15 +153,16 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 2. Comments [❌]
+// MARK: - 2. Comments [✅]
 extension JavascriptTheBasicTests {
-    // - Single-line comments [❌]
+    // - Single-line comments [✅]
     func testSinglelineComments() throws {
         let swiftSource = """
         // This is a comment.
         """
 
         let javascriptSource = """
+        // This is a comment.
         """
         
         try isEqual(
@@ -170,7 +183,14 @@ extension JavascriptTheBasicTests {
          */
         """
 
+        // note that " *" is changed to "*"
         let javascriptSource = """
+        /* This is also a comment
+        but is written over multiple lines. */
+        /**
+         * You can edit, run, and share this code.
+         * play.kotlinlang.org
+         */
         """
 
         try isEqual(
@@ -179,7 +199,7 @@ extension JavascriptTheBasicTests {
         )
     }
     
-    // - Nested multiline comments [❌]
+    // - Nested multiline comments [✅]
     func testNestedMultilineComments() throws {
         let swiftSource = """
         /* This is the start of the first multiline comment.
@@ -188,6 +208,9 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        /* This is the start of the first multiline comment.
+        /* This is the second, nested multiline comment. */
+        This is the end of the first multiline comment. */
         """
 
         try isEqual(
@@ -197,15 +220,16 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 3. Semicolons [❌]
+// MARK: - 3. Semicolons [✅]
 extension JavascriptTheBasicTests {
-    // - Optional semicolons [❌]
+    // - Optional semicolons [✅]
     func testOptionalSemicolons() throws {
         let swiftSource = """
         let cat = "🐱"; print(cat)
         """
 
         let javascriptSource = """
+        const cat = `🐱`; console.log(cat)
         """
         
         try isEqual(
@@ -217,7 +241,7 @@ extension JavascriptTheBasicTests {
 
 // MARK: - 4. Integers [❌]
 extension JavascriptTheBasicTests {
-    // Integer Bounds [❌]
+    // Integer Bounds [✅]
     func testMaximumInteger() throws {
         let swiftSource = """
         UInt8.min
@@ -239,6 +263,22 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
+        Number.MIN_SAFE_INTEGER
+        Number.MAX_SAFE_INTEGER
         """
         
         try isEqual(

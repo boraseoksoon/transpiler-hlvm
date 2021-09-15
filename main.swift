@@ -9,8 +9,22 @@ import Foundation
 
 let HLVM_IR = """
 javascript {
-    let possibleNumber = 20
-    print("The string \\(possibleNumber)")
+    UInt8.min
+    UInt8.max
+    UInt16.min
+    UInt16.max
+    UInt32.min
+    UInt32.max
+    UInt64.min
+    UInt64.max
+    Int8.min
+    Int8.max
+    Int16.min
+    Int16.max
+    Int32.min
+    Int32.max
+    Int64.min
+    Int64.max
 }
 """
 
