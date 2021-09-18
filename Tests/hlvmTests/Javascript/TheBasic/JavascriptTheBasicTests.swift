@@ -386,6 +386,16 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        const decimalInteger = 17
+        const binaryInteger = 0b10001
+        const octalInteger = 0o21
+        const hexadecimalInteger = 0x11
+        const decimalDouble = 12.1875
+        const exponentDouble = 1.21875e1
+        const hexadecimalDouble = 0xC.3p0
+        const paddedDouble = 000123.456
+        const oneMillion = 1_000_000
+        const justOverOneMillion = 1_000_000.000_000_1
         """
         
         try isEqual(
