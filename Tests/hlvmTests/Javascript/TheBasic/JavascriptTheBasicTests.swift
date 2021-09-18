@@ -349,14 +349,17 @@ extension JavascriptTheBasicTests {
 
 // MARK: - 6. Type Safety and Type Inference [❌]
 extension JavascriptTheBasicTests {
-    // - Type Inference [🌟]
+    // - Type Inference [✅]
     func testTypeInference() throws {
         let swiftSource = """
         let meaningOfLife = 42
         let pi = 3.14159
         """
 
+        // Javascript doesn't have Type to inference 😂
         let javascriptSource = """
+        const meaningOfLife = 42
+        const pi = 3.14159
         """
         
         try isEqual(
