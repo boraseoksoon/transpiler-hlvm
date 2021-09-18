@@ -17,6 +17,35 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
     }
     
     // reference: testMaximumInteger
+    public override func visit(_ node: IdentifierExprSyntax) -> ExprSyntax {
+        print("IdentifierExprSyntax : \(node)")
+
+        func transformType(identifier: TokenSyntax) -> TokenSyntax {
+            let res: TokenSyntax!
+            
+            if identifier.text.contains("Int") {
+                res = SyntaxFactory.makeIdentifier("Math.floor")
+            } else if identifier.text.contains("Double") {
+                res = SyntaxFactory.makeIdentifier("Number")
+            } else {
+                res = identifier
+            }
+
+            return res
+                .withLeadingTrivia(node.identifier.leadingTrivia)
+                .withTrailingTrivia(node.identifier.trailingTrivia)
+        }
+        
+        let node = SyntaxFactory.makeIdentifierExpr(
+            identifier: transformType(identifier: node.identifier),
+            declNameArguments: node.declNameArguments
+        )
+
+        return super.visit(node)
+    }
+
+    
+    // reference: testMaximumInteger
     public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         print("MemberAccessExprSyntax : \(node)")
         print("node.name : \(node.name)")
@@ -75,18 +104,20 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         return super.visit(node)
     }
     
-    public override func visit(_ node: PatternBindingSyntax) -> Syntax {
-        func eraseType() -> TypeAnnotationSyntax {
-            SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier(""),
-                                             type: SyntaxFactory.makeTypeIdentifier(""))
-        }
-        
-        return Syntax(SyntaxFactory.makePatternBinding(pattern: node.pattern,
-                                                typeAnnotation: eraseType(),
-                                                initializer: node.initializer,
-                                                accessor: node.accessor,
-                                                trailingComma: node.trailingComma))
-    }
+//    public override func visit(_ node: PatternBindingSyntax) -> Syntax {
+//        func eraseType() -> TypeAnnotationSyntax {
+//            SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier(""),
+//                                             type: SyntaxFactory.makeTypeIdentifier(""))
+//        }
+//        
+//        let node = SyntaxFactory.makePatternBinding(pattern: node.pattern,
+//                                                    typeAnnotation: eraseType(),
+//                                                    initializer: node.initializer,
+//                                                    accessor: node.accessor,
+//                                                    trailingComma: node.trailingComma)
+//
+//        return super.visit(node)
+//    }
     
     public override func visit(_ node: StringLiteralSegmentsSyntax) -> Syntax {
         print("StringLiteralSegments : \(node)")
@@ -110,5 +141,37 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         
         return super.visit(node)
     }
+    
+//    public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+//        print("FunctionCallExprSyntax : \(node)")
+//        print("node.calledExpression : \(node.calledExpression)")
+//        var node = node
+//
+//        // dict.updateValue(100, forKey: "k1")
+//        // dict["k1"] = 100
+//
+//        let calledExpressionSyntaxString = node.calledExpression.tokens
+//            .map { $0.text }
+//            .joined()
+//            .trimmingCharacters(in: .whitespacesAndNewlines)
+//
+//        print("calledExpressionSyntaxString : \(calledExpressionSyntaxString)")
+//        print("node.argumentList : \(node.argumentList)")
+//
+//
+//        if (calledExpressionSyntaxString.hasPrefix("Int(") && calledExpressionSyntaxString.hasSuffix(")")) {
+//
+//            node = SyntaxFactory.makeFunctionCallExpr(calledExpression: ExprSyntax(SyntaxFactory.makeVariableExpr("Math.floor")),
+//                                                      leftParen: node.leftParen,
+//                                                      argumentList: node.argumentList,
+//                                                      rightParen: node.rightParen,
+//                                                      trailingClosure: nil,
+//                                                      additionalTrailingClosures: nil)
+//        }
+//
+//        return super.visit(node)
+//    }
+
+    
 }
 

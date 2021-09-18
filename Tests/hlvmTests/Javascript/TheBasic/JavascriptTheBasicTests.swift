@@ -411,15 +411,17 @@ extension JavascriptTheBasicTests {
         let swiftSource = """
         let twoThousand: UInt16 = 2_000
         let one: UInt8 = 1
-        UInt16(one)
+        UInt16(twoThousand)
         Int32(one)
         """
 
         let javascriptSource = """
+        const twoThousand: UInt16 = 2_000
+        const one: UInt8 = 1
+        Math.floor(twoThousand)
+        Math.floor(one)
         """
 
-        // TODO :let twoThousandAndOne = twoThousand + UInt16(one)
-        
         try isEqual(
             swiftSource: swiftSource,
             javascriptSource: javascriptSource
@@ -439,6 +441,10 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        const three = 3
+        const pointOneFourOneFiveNine = 0.14159
+        const pi = Number(three) + pointOneFourOneFiveNine
+        const integerPi = Math.floor(pi)
         """
         
         // TODO:
