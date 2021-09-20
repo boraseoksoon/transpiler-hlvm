@@ -463,7 +463,7 @@ extension JavascriptTheBasicTests {
         let swiftSource = """
         typealias AudioSample = UInt16
         """
-
+        // TODO: fatalError
         let javascriptSource = """
         typealias AudioSample = UInt16
         """
@@ -539,14 +539,6 @@ extension JavascriptTheBasicTests {
 // MARK: - 12. Tuples  [❌]
 extension JavascriptTheBasicTests {
     func testTuples() throws {
-//        let swiftSource = """
-//        let http404Error = (404, "Not Found")
-//        """
-//
-//        let kotlinSource = """
-//        val http404Error = arrayOf(404, "Not Found")
-//        """
-
         let swiftSource = """
         let http404Error = (404, "Not Found")
         let (statusCode, statusMessage) = http404Error
@@ -572,7 +564,32 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        const http404Error = [404, `Not Found`]
+        const [statusCode, statusMessage] = http404Error
+        console.log(`The status code is ${statusCode}`)
+        // Prints `The status code is 404`
+        console.log(`The status message is ${statusMessage}`)
+        // Prints `The status message is Not Found`
+
+        const [justTheStatusCode,  ] = http404Error
+        console.log(`The status code is ${justTheStatusCode}`)
+        // Prints `The status code is 404`
+
+        console.log(`The status code is ${http404Error[0]}`)
+        // Prints `The status code is 404`
+        console.log(`The status message is ${http404Error[1]}`)
+        // Prints `The status message is Not Found`
+
+        const http200Status = {statusCode: 200, description: `OK`}
+        console.log(`The status code is ${http200Status.statusCode}`)
+        // Prints `The status code is 200`
+        console.log(`The status message is ${http200Status.description}`)
+        // Prints `The status message is OK`
         """
+        
+        // FIXME: 
+        // this case should be tested more
+        // let http200Status = (200, description: "O:K")
 
         try isEqual(
             swiftSource: swiftSource,

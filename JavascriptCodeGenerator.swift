@@ -16,6 +16,56 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         return Syntax(newToken)
     }
     
+    public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
+        print("JS ExpressionSegmentSyntax : \(node)")
+        let node = node
+            .withBackslash(SyntaxFactory.makeUnknown("$"))
+            .withLeftParen(SyntaxFactory.makeUnknown("{"))
+            .withRightParen(SyntaxFactory.makeUnknown("}"))
+
+        return super.visit(node)
+    }
+    
+    public override func visit(_ node: TuplePatternSyntax) -> PatternSyntax {
+        let newNode = node
+            .withLeftParen(SyntaxFactory.makeIdentifier("["))
+            .withRightParen(SyntaxFactory.makeIdentifier("]"))
+            .withLeadingTrivia(node.leadingTrivia ?? .spaces(0))
+            .withTrailingTrivia(node.trailingTrivia ?? .spaces(0))
+        
+        return super.visit(newNode)
+    }
+    
+    public override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
+        print("TupleExprSyntax : \(node)")
+        var mutNode = node
+        
+//        let res = node.tokens
+//            .map ({ $0.text })
+//            .filter { $0 != "(" || $0 != ")" }
+//            .joined()
+//            .components(separatedBy: ",")
+//            .map { $0.components(separatedBy: ":") }
+//
+//        print("res : \(res)")
+//
+        
+        let tokenTexts = node.tokens.map ({ $0.text })
+        if tokenTexts.contains(":") && tokenTexts.count >= 3 && tokenTexts[2] == ":" {
+            mutNode = node
+                .withLeftParen(SyntaxFactory.makeIdentifier("{"))
+                .withRightParen(SyntaxFactory.makeIdentifier("}"))
+        } else {
+            mutNode = node
+                .withLeftParen(SyntaxFactory.makeIdentifier("["))
+                .withRightParen(SyntaxFactory.makeIdentifier("]"))
+        }
+        
+        return super.visit(mutNode
+                            .withLeadingTrivia(node.leadingTrivia ?? .spaces(0))
+                            .withTrailingTrivia(node.trailingTrivia ?? .spaces(0)))
+    }
+
     public override func visit(_ node: TypealiasDeclSyntax) -> DeclSyntax {
         // fatalError("TypealiasDeclSyntax : \(node) Uncaught SyntaxError: Unexpected identifier")
         return super.visit(node)
@@ -102,15 +152,21 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
                 }
         }
         
+        if Int(node.name.text) != nil {
+            mutNode = mutNode
+                .withDot(SyntaxFactory.makeIdentifier("["))
+                .withName(SyntaxFactory.makeIdentifier("\(node.name)]"))
+        }
+        
         return super.visit(mutNode)
     }
-    
-    
+
     public override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
         return super.visit(node)
     }
     
     public override func visit(_ node: StringSegmentSyntax) -> Syntax {
+        // print("StringSegmentSyntax : \(node)")
         return super.visit(node)
     }
     
@@ -130,25 +186,7 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
 //    }
     
     public override func visit(_ node: StringLiteralSegmentsSyntax) -> Syntax {
-        print("StringLiteralSegments : \(node)")
-        
-        // TODO: SERIOUSLY Fragile code
-        let res: [String] = node.tokens.map {
-            if $0.text == "\\" {
-                return "$"
-            } else if $0.text == "(" {
-                return "{"
-            } else if $0.text == ")" {
-                return "}"
-            } else {
-                return $0.text
-            }
-        }
-        print("res : \(res)")
-        
-        let variable = Syntax(SyntaxFactory.makeIdentifier(res.joined()))
-        let node = SyntaxFactory.makeStringLiteralSegments([variable])
-        
+        // print("StringLiteralSegments : \(node)")
         return super.visit(node)
     }
     

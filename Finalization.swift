@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: REMOVE ALL
 // TODO: SHOULD NOT BE USED, JUST FOR PROTOTYPING. LET'S SAY print("let is good!")
 public func finalize(source: String, for language: Language) -> String {
     switch language {
@@ -27,6 +28,7 @@ private func finalizeJavascript(source: String) -> String {
         .replacingOccurrences(of: "var", with: "let")
         .replacingOccurrences(of: "print", with: "console.log")
         .replacingOccurrences(of: "\"", with: "`")
+        .replacingOccurrences(of: "_", with: " ")
 }
 
 private func finalizePython(source: String) -> String {
