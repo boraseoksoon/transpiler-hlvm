@@ -9,10 +9,27 @@ import Foundation
 
 let HLVM_IR = """
 javascript {
-        let twoThousand: UInt16 = 2_000
-        let one: UInt8 = 1
-        UInt16(twoThousand)
-        Int32(one)
+    let orangesAreOrange = true
+    let turnipsAreDelicious = false
+    if turnipsAreDelicious {
+        print("Mmm, tasty turnips!")
+    } else {
+        print("Eww, turnips are horrible.")
+    }
+    // Prints "Eww, turnips are horrible."
+    let i = 1
+    if i == 1 {
+        // this example will compile successfully
+    }
+    
+    let isGood = true
+    var isNice = true
+    
+    if isGood, isNice {
+        print("pass!")
+    } else {
+        print("can't pass!")
+    }
 }
 """
 

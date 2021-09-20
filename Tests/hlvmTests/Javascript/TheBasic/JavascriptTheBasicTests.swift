@@ -101,7 +101,7 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
-        let red, green, blue;
+        const red, green, blue;
         """
         
         try isEqual(
@@ -465,7 +465,11 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        typealias AudioSample = UInt16
         """
+//        let javascriptSource = """
+//        \(fatalError("Uncaught SyntaxError: Unexpected identifier"))
+//        """
 
         try isEqual(
             swiftSource: swiftSource,
@@ -502,6 +506,27 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        const orangesAreOrange = true
+        const turnipsAreDelicious = false
+        if (turnipsAreDelicious) {
+            console.log(`Mmm, tasty turnips!`)
+        } else {
+            console.log(`Eww, turnips are horrible.`)
+        }
+        // Prints "Eww, turnips are horrible."
+        const i = 1
+        if (i == 1) {
+            // this example will compile successfully
+        }
+        
+        const isGood = true
+        let isNice = true
+        
+        if (isGood && isNice) {
+            console.log(`pass!`)
+        } else {
+            console.log(`can't pass!`)
+        }
         """
 
         try isEqual(

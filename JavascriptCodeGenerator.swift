@@ -16,6 +16,10 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         return Syntax(newToken)
     }
     
+    public override func visit(_ node: TypealiasDeclSyntax) -> DeclSyntax {
+        fatalError("TypealiasDeclSyntax : \(node) Uncaught SyntaxError: Unexpected identifier")
+    }
+
     // reference: testMaximumInteger
     public override func visit(_ node: IdentifierExprSyntax) -> ExprSyntax {
         print("IdentifierExprSyntax : \(node)")
@@ -44,7 +48,6 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         return super.visit(node)
     }
 
-    
     // reference: testMaximumInteger
     public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         print("MemberAccessExprSyntax : \(node)")
