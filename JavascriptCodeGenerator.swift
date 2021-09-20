@@ -17,7 +17,14 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: TypealiasDeclSyntax) -> DeclSyntax {
-        fatalError("TypealiasDeclSyntax : \(node) Uncaught SyntaxError: Unexpected identifier")
+        // fatalError("TypealiasDeclSyntax : \(node) Uncaught SyntaxError: Unexpected identifier")
+        return super.visit(node)
+    }
+
+    public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
+        // implemented: testBoolean
+        let newNode = makeIfStmt(node: node, language: .javascript)
+        return super.visit(newNode)
     }
 
     // reference: testMaximumInteger

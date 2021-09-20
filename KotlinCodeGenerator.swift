@@ -160,31 +160,8 @@ final class KotlinCodeGenerator: SyntaxRewriter {
     }
     
     public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
-        // implemented: testBoolean
-        let left = SyntaxFactory.makeConditionElement(condition: Syntax(SyntaxFactory.makeIdentifier("(")),
-                                                      trailingComma: nil)
-        
-        let right = SyntaxFactory.makeConditionElement(condition: Syntax(SyntaxFactory.makeIdentifier(")").withTrailingTrivia(.spaces(1))),
-                                                       trailingComma: nil)
-
-        let conditions = node.conditions.map {
-            SyntaxFactory.makeConditionElement(
-                condition: Syntax(SyntaxFactory.makeIdentifier($0.condition.description.trimmingCharacters(in: .whitespacesAndNewlines))),
-                trailingComma: $0.description.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix(",")
-                    ? SyntaxFactory.makeIdentifier(" && ") : $0.trailingComma)
-        }
-
-        let node = SyntaxFactory.makeIfStmt(
-            labelName: node.labelName,
-            labelColon: node.labelColon,
-            ifKeyword: node.ifKeyword,
-            conditions: SyntaxFactory.makeConditionElementList(conditions).prepending(left).appending(right),
-            body: node.body,
-            elseKeyword: node.elseKeyword,
-            elseBody: node.elseBody
-        )
-        
-        return super.visit(node)
+        let newNode = makeIfStmt(node: node, language: .kotlin)
+        return super.visit(newNode)
     }
     
     public override func visit(_ node: SimpleTypeIdentifierSyntax) -> TypeSyntax {

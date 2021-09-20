@@ -478,7 +478,7 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 11. Boolean [❌]
+// MARK: - 11. Boolean [✅]
 extension JavascriptTheBasicTests {
     func testBoolean() throws {
         let swiftSource = """
@@ -513,7 +513,7 @@ extension JavascriptTheBasicTests {
         } else {
             console.log(`Eww, turnips are horrible.`)
         }
-        // Prints "Eww, turnips are horrible."
+        // Prints `Eww, turnips are horrible.`
         const i = 1
         if (i == 1) {
             // this example will compile successfully
