@@ -240,11 +240,6 @@ final class PythonCodeGenerator: SyntaxRewriter {
     public override func visit(_ node: PatternBindingSyntax) -> Syntax {
         print("PatternBindingSyntax : \(node.initializer)")
 
-        func eraseType() -> TypeAnnotationSyntax {
-            SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier("").withTrailingTrivia(.spaces(1)),
-                                             type: SyntaxFactory.makeTypeIdentifier(""))
-        }
-        
         enum PatternBindingSyntaxType {
             case emptyArray
             case none

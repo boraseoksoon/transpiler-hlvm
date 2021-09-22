@@ -187,8 +187,6 @@ final class KotlinCodeGenerator: SyntaxRewriter {
                 .withTrailingTrivia(node.trailingTrivia ?? .spaces(0))
         }
         
-        
-        
         return super.visit(node)
     }
 
@@ -632,6 +630,8 @@ final class KotlinCodeGenerator: SyntaxRewriter {
             labelName: node.labelName,
             labelColon: node.labelColon,
             forKeyword: forKeyword,
+            tryKeyword: nil,
+            awaitKeyword: nil,
             caseKeyword: node.caseKeyword,
             pattern: node.pattern,
             typeAnnotation: node.typeAnnotation,

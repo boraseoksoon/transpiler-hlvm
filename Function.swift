@@ -37,3 +37,8 @@ public func makeIfStmt(node: IfStmtSyntax, language: Language) -> IfStmtSyntax {
             return node
     }
 }
+
+func eraseType() -> TypeAnnotationSyntax {
+    SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier("").withTrailingTrivia(.spaces(1)),
+                                     type: SyntaxFactory.makeTypeIdentifier(""))
+}

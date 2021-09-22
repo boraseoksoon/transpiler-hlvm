@@ -16,6 +16,27 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         return Syntax(newToken)
     }
     
+    public override func visit(_ node: TypeAnnotationSyntax) -> Syntax {
+        if recurScan(node: node.tokens.first(where: { _ in true }), forKeyword:"=", isBackward: false) {
+            return super.visit(eraseType())
+            
+        } else {
+            let node = SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier("").withTrailingTrivia(.spaces(1)),
+                                             type: SyntaxFactory.makeTypeIdentifier("= null"))
+            
+            return super.visit(node)
+        }
+    }
+    
+//    public override func visit(_ node: OptionalTypeSyntax) -> TypeSyntax {
+//        let node = node
+//            .withQuestionMark(SyntaxFactory.makeIdentifier(""))
+//            .withLeadingTrivia(node.leadingTrivia ?? .spaces(1))
+//            .withTrailingTrivia(node.trailingTrivia ?? .spaces(1))
+//
+//        return super.visit(node)
+//    }
+    
     public override func visit(_ node: ExpressionSegmentSyntax) -> Syntax {
         print("JS ExpressionSegmentSyntax : \(node)")
         let node = node
@@ -169,22 +190,7 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         // print("StringSegmentSyntax : \(node)")
         return super.visit(node)
     }
-    
-//    public override func visit(_ node: PatternBindingSyntax) -> Syntax {
-//        func eraseType() -> TypeAnnotationSyntax {
-//            SyntaxFactory.makeTypeAnnotation(colon: SyntaxFactory.makeIdentifier(""),
-//                                             type: SyntaxFactory.makeTypeIdentifier(""))
-//        }
-//        
-//        let node = SyntaxFactory.makePatternBinding(pattern: node.pattern,
-//                                                    typeAnnotation: eraseType(),
-//                                                    initializer: node.initializer,
-//                                                    accessor: node.accessor,
-//                                                    trailingComma: node.trailingComma)
-//
-//        return super.visit(node)
-//    }
-    
+
     public override func visit(_ node: StringLiteralSegmentsSyntax) -> Syntax {
         // print("StringLiteralSegments : \(node)")
         return super.visit(node)

@@ -29,6 +29,7 @@ private func finalizeJavascript(source: String) -> String {
         .replacingOccurrences(of: "print", with: "console.log")
         .replacingOccurrences(of: "\"", with: "`")
         .replacingOccurrences(of: "_", with: " ")
+        .replacingOccurrences(of: "nil", with: "null")
 }
 
 private func finalizePython(source: String) -> String {

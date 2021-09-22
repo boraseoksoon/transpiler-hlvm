@@ -615,6 +615,15 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        let serverResponseCode = 404
+        // serverResponseCode contains an actual Int value of 404
+
+        serverResponseCode = null
+        // serverResponseCode now contains no value
+
+        const test = null
+        let surveyAnswer = null
+        // surveyAnswer is automatically set to null
         """
 
         try isEqual(
