@@ -9,15 +9,17 @@ import Foundation
 
 let HLVM_IR = """
 javascript {
-    var serverResponseCode: Int? = 404
-    // serverResponseCode contains an actual Int value of 404
-    
-    serverResponseCode = nil
-    // serverResponseCode now contains no value
-        
-    let test: Int?
-    var surveyAnswer: String?
-    // surveyAnswer is automatically set to nil
+    var convertedNumber: Int?
+
+    if convertedNumber != nil {
+        print("convertedNumber contains some integer value.")
+    }
+    // Prints "convertedNumber contains some integer value."
+
+    if convertedNumber != nil {
+        print("convertedNumber has an integer value of \\(convertedNumber!).")
+    }
+    // Prints "convertedNumber has an integer value of 123."
 }
 """
 

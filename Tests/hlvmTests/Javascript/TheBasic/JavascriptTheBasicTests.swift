@@ -369,7 +369,7 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 7. Numeric Literals [❌]
+// MARK: - 7. Numeric Literals [✅]
 extension JavascriptTheBasicTests {
     func testNumericLiteral() throws {
         let swiftSource = """
@@ -405,7 +405,7 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 8. Numeric Type Conversion [❌]
+// MARK: - 8. Numeric Type Conversion [✅]
 extension JavascriptTheBasicTests {
     func testNumericTypeConversion() throws {
         let swiftSource = """
@@ -416,8 +416,8 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
-        const twoThousand: UInt16 = 2_000
-        const one: UInt8 = 1
+        const twoThousand = 2_000
+        const one = 1
         Math.floor(twoThousand)
         Math.floor(one)
         """
@@ -430,7 +430,7 @@ extension JavascriptTheBasicTests {
 
 }
 
-// MARK: - 9. Integer and Floating-Point Conversion [❌]
+// MARK: - 9. Integer and Floating-Point Conversion [✅]
 extension JavascriptTheBasicTests {
     func testFloatingConversion() throws {
         let swiftSource = """
@@ -438,6 +438,7 @@ extension JavascriptTheBasicTests {
         let pointOneFourOneFiveNine = 0.14159
         let pi = Double(three) + pointOneFourOneFiveNine
         let integerPi = Int(pi)
+        let pi = Double(three) + pointOneFourOneFiveNine
         """
 
         let javascriptSource = """
@@ -447,9 +448,6 @@ extension JavascriptTheBasicTests {
         const integerPi = Math.floor(pi)
         """
         
-        // TODO:
-        // let pi = Double(three) + pointOneFourOneFiveNine
-        
         try isEqual(
             swiftSource: swiftSource,
             javascriptSource: javascriptSource
@@ -457,7 +455,7 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 10. Type Aliases [❌]
+// MARK: - 10. Type Aliases []
 extension JavascriptTheBasicTests {
     func testTypeAlias() throws {
         let swiftSource = """
@@ -465,7 +463,7 @@ extension JavascriptTheBasicTests {
         """
         // TODO: fatalError
         let javascriptSource = """
-        typealias AudioSample = UInt16
+        
         """
 //        let javascriptSource = """
 //        \(fatalError("Uncaught SyntaxError: Unexpected identifier"))
@@ -536,7 +534,7 @@ extension JavascriptTheBasicTests {
     }
 }
 
-// MARK: - 12. Tuples  [❌]
+// MARK: - 12. Tuples  [✅]
 extension JavascriptTheBasicTests {
     func testTuples() throws {
         let swiftSource = """
@@ -571,7 +569,7 @@ extension JavascriptTheBasicTests {
         console.log(`The status message is ${statusMessage}`)
         // Prints `The status message is Not Found`
 
-        const [justTheStatusCode,  ] = http404Error
+        const [justTheStatusCode, _] = http404Error
         console.log(`The status code is ${justTheStatusCode}`)
         // Prints `The status code is 404`
 
@@ -586,10 +584,6 @@ extension JavascriptTheBasicTests {
         console.log(`The status message is ${http200Status.description}`)
         // Prints `The status message is OK`
         """
-        
-        // FIXME: 
-        // this case should be tested more
-        // let http200Status = (200, description: "O:K")
 
         try isEqual(
             swiftSource: swiftSource,
@@ -600,7 +594,7 @@ extension JavascriptTheBasicTests {
 
 // MARK: - 13. Optionals [❌]
 extension JavascriptTheBasicTests {
-    // - nil [❌]
+    // - nil [✅]
     func testNil() throws {
         let swiftSource = """
         var serverResponseCode: Int? = 404
@@ -648,6 +642,17 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        let convertedNumber;
+
+        if (convertedNumber != null) {
+            console.log("convertedNumber contains some integer value.")
+        }
+        // Prints `convertedNumber contains some integer value.`
+
+        if (convertedNumber != null) {
+            console.log(`convertedNumber has an integer value of ${convertedNumber}.`)
+        }
+        // Prints `convertedNumber has an integer value of 123.`
         """
 
         try isEqual(

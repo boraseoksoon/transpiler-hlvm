@@ -27,16 +27,15 @@ public func generateCode(source: String,
                          to destinationLanguage: Language) -> String {
     guard isValid(source:source, for: targetLanguage)
         else { return source }
+    
     print("targetLanguage : \(targetLanguage), destinationLanguage : \(destinationLanguage)")
     
     switch targetLanguage {
         case .swift:
             let swiftAST = try! SyntaxParser.parse(source: source)
             let generatedCode = CodeGenerator(from: swiftAST, to: destinationLanguage).generate()
-            return finalize(
-                source: generatedCode,
-                for: destinationLanguage
-            )
+            
+            return finalize(source: generatedCode, for: destinationLanguage)
             
         case .kotlin:
             let kotlinAST = kotlinAST(from: source)
@@ -53,6 +52,7 @@ public func generateCode(source: String,
             }
         case .python:
             let pythonAST = pythonAST(from: source)
+            
             if destinationLanguage == .swift {
                 return finalize(
                     source: source,
@@ -67,10 +67,7 @@ public func generateCode(source: String,
         case .javascript:
             let javascriptAST = javascriptAST(from: source)
             if destinationLanguage == .swift {
-                return finalize(
-                    source: source,
-                    for: .swift
-                )
+                return finalize(source: source, for: .swift)
             } else {
                 let swiftCode = CodeGenerator(from: javascriptAST, to: .swift).generate()
                 return generateCode(source: swiftCode,
@@ -78,7 +75,13 @@ public func generateCode(source: String,
                                     to: destinationLanguage)
             }
         default:
-            fatalError("targetLanguage : \(targetLanguage), destinationLanguage : \(destinationLanguage), other than swift, all transpilers are being implemented.")
+            let msg = """
+            targetLanguage : \(targetLanguage),
+            destinationLanguage : \(destinationLanguage),
+            other than swift, all transpilers are being implemented.
+            """
+            
+            fatalError(msg)
     }
 }
 
