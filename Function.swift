@@ -8,46 +8,89 @@ import SwiftSyntax
 
 public func makeIfStmt(node: IfStmtSyntax, language: Language) -> IfStmtSyntax {
     switch language {
-        case .kotlin, .javascript:
-            let left = SyntaxFactory
-                .makeConditionElement(
-                    condition: Syntax(SyntaxFactory.makeIdentifier("(")),
-                    trailingComma: nil
-                )
-            
-            let right = SyntaxFactory.makeConditionElement(
-                condition: Syntax(SyntaxFactory.makeIdentifier(")").withTrailingTrivia(.spaces(1))),
-                trailingComma: nil
-            )
-
-            let conditions = node.conditions.map {
-                SyntaxFactory.makeConditionElement(
-                    condition: Syntax(SyntaxFactory
-                                        .makeIdentifier($0
-                                            .condition
-                                            .description
-                                            .trimmingCharacters(in: .whitespacesAndNewlines))),
-                    trailingComma: $0.description.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix(",")
-                        ? SyntaxFactory.makeIdentifier(" && ") : $0.trailingComma)
-            }
-
-            let node = SyntaxFactory.makeIfStmt(
-                labelName: node.labelName,
-                labelColon: node.labelColon,
-                ifKeyword: node.ifKeyword,
-                conditions: SyntaxFactory
-                    .makeConditionElementList(conditions)
-                    .prepending(left)
-                    .appending(right),
-                body: node.body,
-                elseKeyword: node.elseKeyword,
-                elseBody: node.elseBody
-            )
-            
-            return node
+        case .kotlin :
+            return makeKotlinIfStmt(node: node, language: language)
+        case .javascript:
+            return makeJavascriptIfStmt(node: node, language: language)
         default:
             return node
     }
+}
+
+func makeKotlinIfStmt(node: IfStmtSyntax, language: Language) -> IfStmtSyntax {
+    let left = SyntaxFactory
+        .makeConditionElement(
+            condition: Syntax(SyntaxFactory.makeIdentifier("(")),
+            trailingComma: nil
+        )
+    
+    let right = SyntaxFactory.makeConditionElement(
+        condition: Syntax(SyntaxFactory.makeIdentifier(")").withTrailingTrivia(.spaces(1))),
+        trailingComma: nil
+    )
+
+    let conditions = node.conditions.map {
+        SyntaxFactory.makeConditionElement(
+            condition: Syntax(SyntaxFactory
+                                .makeIdentifier($0
+                                    .condition
+                                    .description
+                                    .trimmingCharacters(in: .whitespacesAndNewlines))),
+            trailingComma: $0.description.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix(",")
+                ? SyntaxFactory.makeIdentifier(" && ") : $0.trailingComma)
+    }
+
+    let node = SyntaxFactory.makeIfStmt(
+        labelName: node.labelName,
+        labelColon: node.labelColon,
+        ifKeyword: node.ifKeyword,
+        conditions: SyntaxFactory
+            .makeConditionElementList(conditions)
+            .prepending(left)
+            .appending(right),
+        body: node.body,
+        elseKeyword: node.elseKeyword,
+        elseBody: node.elseBody
+    )
+    return node
+}
+
+func makeJavascriptIfStmt(node: IfStmtSyntax, language: Language) -> IfStmtSyntax {
+    let left = SyntaxFactory
+        .makeConditionElement(
+            condition: Syntax(SyntaxFactory.makeIdentifier("(")),
+            trailingComma: nil
+        )
+    
+    let right = SyntaxFactory.makeConditionElement(
+        condition: Syntax(SyntaxFactory.makeIdentifier(")").withTrailingTrivia(.spaces(1))),
+        trailingComma: nil
+    )
+
+    let conditions = node.conditions.map {
+        SyntaxFactory.makeConditionElement(
+            condition: Syntax(SyntaxFactory
+                                .makeIdentifier($0
+                                    .condition
+                                    .description
+                                    .trimmingCharacters(in: .whitespacesAndNewlines))),
+            trailingComma: $0.description.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix(",")
+                ? SyntaxFactory.makeIdentifier(" && ") : $0.trailingComma)
+    }
+
+    let node = SyntaxFactory.makeIfStmt(
+        labelName: node.labelName,
+        labelColon: node.labelColon,
+        ifKeyword: node.ifKeyword,
+        conditions: SyntaxFactory
+            .makeConditionElementList(conditions)
+            .prepending(left)
+            .appending(right),
+        body: node.body,
+        elseKeyword: node.elseKeyword,
+        elseBody: node.elseBody
+    )
+    return node
 }
 
 func eraseType() -> TypeAnnotationSyntax {

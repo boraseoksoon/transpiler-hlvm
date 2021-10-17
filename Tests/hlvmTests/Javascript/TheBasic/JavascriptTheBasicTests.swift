@@ -625,7 +625,7 @@ extension JavascriptTheBasicTests {
             javascriptSource: javascriptSource
         )
     }
-    // - If Statements and Forced Unwrapping [❌]
+    // - If Statements and Forced Unwrapping [✅]
     func testIfStatementsAndForcedUnwrapping() throws {
         let swiftSource = """
         var convertedNumber: Int?
@@ -642,15 +642,15 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
-        let convertedNumber;
+        let convertedNumber = null
 
         if (convertedNumber != null) {
-            console.log("convertedNumber contains some integer value.")
+            console.log(`convertedNumber contains some integer value.`)
         }
         // Prints `convertedNumber contains some integer value.`
 
         if (convertedNumber != null) {
-            console.log(`convertedNumber has an integer value of ${convertedNumber}.`)
+            console.log(`convertedNumber has an integer value of ${convertedNumber!}.`)
         }
         // Prints `convertedNumber has an integer value of 123.`
         """
@@ -674,6 +674,14 @@ extension JavascriptTheBasicTests {
         """
 
         let javascriptSource = """
+        const possibleNumber = "10"
+        
+        const actualNumber = parseInt(possibleNumber)
+        if (actualNumber != null) {
+            console.log(`The string ${possibleNumber} has an integer value of ${actualNumber}`)
+        } else {
+            console.log(`The string ${possibleNumber} couldn't be converted to an integer`)
+        }
         """
 
         try isEqual(

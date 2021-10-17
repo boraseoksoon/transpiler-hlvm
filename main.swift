@@ -9,17 +9,13 @@ import Foundation
 
 let HLVM_IR = """
 javascript {
-    var convertedNumber: Int?
+    let possibleNumber: String = "10"
 
-    if convertedNumber != nil {
-        print("convertedNumber contains some integer value.")
+    if let actualNumber = Int(possibleNumber) {
+        print("The string \\(possibleNumber) has an integer value of \\(actualNumber)")
+    } else {
+        print("The string \\(possibleNumber) couldn't be converted to an integer")
     }
-    // Prints "convertedNumber contains some integer value."
-
-    if convertedNumber != nil {
-        print("convertedNumber has an integer value of \\(convertedNumber!).")
-    }
-    // Prints "convertedNumber has an integer value of 123."
 }
 """
 

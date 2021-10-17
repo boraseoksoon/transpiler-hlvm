@@ -16,6 +16,40 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
         return Syntax(newToken)
     }
     
+    public override func visit(_ node: OptionalBindingConditionSyntax) -> Syntax {
+        print("OptionalBindingConditionSyntax : \(node)")
+        
+        if (node.parent?.parent?.parent?.firstToken?.text ?? "") == "guard" {
+            return super.visit(node)
+        } else {
+            
+    //        let a: Int? = nil
+    //        if let a = a {
+    //            print(a)
+    //        }
+    //  =>
+    //        a = None
+    //        if a is not None:
+    //            print(a)
+            
+            let letKeyword = SyntaxFactory.makeIdentifier("")
+            let pattern = node.pattern
+            
+            let value = ExprSyntax(SyntaxFactory.makeVariableExpr("None"))
+            let isNot = SyntaxFactory.makeIdentifier("is not ")
+            let initializer = SyntaxFactory.makeInitializerClause(equal: isNot, value:value)
+
+            let node = SyntaxFactory.makeOptionalBindingCondition(
+                letOrVarKeyword: letKeyword,
+                pattern: pattern,
+                typeAnnotation: nil,
+                initializer: initializer
+            )
+            
+            return super.visit(node)
+        }
+    }
+    
     public override func visit(_ node: TypeAnnotationSyntax) -> Syntax {
         if recurScan(node: node.tokens.first(where: { _ in true }), forKeyword:"=", isBackward: false) {
             return super.visit(eraseType())
@@ -94,8 +128,11 @@ final class JavascriptCodeGenerator: SyntaxRewriter {
 
     public override func visit(_ node: IfStmtSyntax) -> StmtSyntax {
         // implemented: testBoolean
+        print("IfStmtSyntax : \(node)")
         let newNode = makeIfStmt(node: node, language: .javascript)
         return super.visit(newNode)
+        
+        return super.visit(node)
     }
 
     // reference: testMaximumInteger
