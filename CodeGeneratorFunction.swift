@@ -8,15 +8,14 @@
 import Foundation
 import SwiftSyntax
 
-
 public func isValid(source: String, for language: Language) -> Bool {
     true
 }
 
 func generateSyntax(from token: TokenSyntax, to language: Language) -> TokenSyntax {
-//    print("generated token : \(token)")
-//    print("generated token.tokenKind : \(token.tokenKind)")
-//    print("generated token.tokens : \(token.tokens.map { $0.text })")
+    //    print("generated token : \(token)")
+    //    print("generated token.tokenKind : \(token.tokenKind)")
+    //    print("generated token.tokens : \(token.tokens.map { $0.text })")
     
     switch language {
         case .python:
@@ -51,7 +50,7 @@ func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
             // return token.withKind(.colon).withoutTrivia()
         case .rightBrace:
             return token
-                // token.withKind(.unknown("")).withoutTrivia().withLeadingTrivia(Trivia.newlines(0))
+            // token.withKind(.unknown("")).withoutTrivia().withLeadingTrivia(Trivia.newlines(0))
         case .letKeyword:
             return token.withKind(.unknown(""))
                 .withTrailingTrivia(Trivia.spaces(0))
@@ -59,13 +58,13 @@ func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
             return token.withKind(.unknown(""))
                 .withTrailingTrivia(Trivia.spaces(0))
         default:
-             return token // token.withKind(token.tokenKind)
-
-//            let msg = """
-//            no token text : \(token.text) token Kind : \(token.tokenKind)!
-//            """
-//
-//            fatalError(msg)
+            return token // token.withKind(token.tokenKind)
+            
+            //            let msg = """
+            //            no token text : \(token.text) token Kind : \(token.tokenKind)!
+            //            """
+            //
+            //            fatalError(msg)
     }
 }
 
@@ -73,24 +72,24 @@ func generatePythonSyntax(from token: TokenSyntax) -> TokenSyntax {
 func makeArray(startIndex: Int, endIndex: Int, isClosedRange: Bool = false) -> ExprSyntax {
     let array = (isClosedRange ? Array((startIndex..<endIndex)) : Array((startIndex...endIndex))).map {
         SyntaxFactory.makeArrayElement(
-          expression: (
-            ExprSyntax(
-              SyntaxFactory.makeIntegerLiteralExpr(
-                digits: SyntaxFactory.makeIntegerLiteral("\($0)")
-              )
+            expression: (
+                ExprSyntax(
+                    SyntaxFactory.makeIntegerLiteralExpr(
+                        digits: SyntaxFactory.makeIntegerLiteral("\($0)")
+                    )
+                )
+            ),
+            trailingComma: (
+                $0 == endIndex ? nil : (SyntaxFactory.makeCommaToken(trailingTrivia: .spaces(1)))
             )
-          ),
-          trailingComma: (
-            $0 == endIndex ? nil : (SyntaxFactory.makeCommaToken(trailingTrivia: .spaces(1)))
-          )
         )
     }
     
     return ExprSyntax(
-      SyntaxFactory.makeArrayExpr(
-        leftSquare: SyntaxFactory.makeLeftSquareBracketToken(),
-        elements: SyntaxFactory.makeArrayElementList(array),
-        rightSquare: SyntaxFactory.makeRightSquareBracketToken()
-      )
+        SyntaxFactory.makeArrayExpr(
+            leftSquare: SyntaxFactory.makeLeftSquareBracketToken(),
+            elements: SyntaxFactory.makeArrayElementList(array),
+            rightSquare: SyntaxFactory.makeRightSquareBracketToken()
+        )
     )
 }

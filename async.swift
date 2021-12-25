@@ -10,13 +10,13 @@ import Foundation
 func asyncTranspile(_ source: String) async -> String {
     return await withUnsafeContinuation { continuation in
         DispatchQueue.global().async {
-            continuation.resume(returning: transpile(HLVM_IR))
+            continuation.resume(returning: transpile(source))
         }
     }
 }
 
-func `async`(code: @escaping () async -> Void) {
+func async(code: @escaping () async throws -> Void) {
     Task {
-        await code()
+        try await code()
     }
 }

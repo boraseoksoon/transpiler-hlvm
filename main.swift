@@ -19,19 +19,12 @@ javascript {
 }
 """
 
-async {
-    for _ in 0...10 {
-        let code = await asyncTranspile(HLVM_IR)
+let code = transpile(HLVM_IR)
 
-        print("*********************")
-        print("** code generation **")
-        print("*********************")
+print("*********************")
+print("** code generation **")
+print("*********************")
 
-        print("")
-        print(code)
-        print("")
-    }
-}
-
-print("run loop running...")
-RunLoop.current.run()
+print("")
+print(code)
+print("")
