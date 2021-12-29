@@ -1,2 +1,2 @@
-# HLVM
-The HLVM: Transpiler Infrastructure
+# TLVM
+TLVM: Transpiler Infrastructure
